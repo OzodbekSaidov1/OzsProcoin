@@ -1,43 +1,158 @@
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-vBOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-vBOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-vvvBOT o'z faoliyatini tugatdi
-vBOT o'z faoliyatini tugatdi
-vvvBOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
-BOT o'z faoliyatini tugatdi
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>OZS TAP - Texnik To'xtalish</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-dark: #07090f;
+            --accent-blue: #00e5ff;
+            --accent-gold: #ffd700;
+            --text-white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 50% 20%, #1a1f35 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, #0d1117 0%, transparent 50%);
+            color: var(--text-white);
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .icon-box {
+            font-size: 80px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px var(--accent-blue));
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            color: var(--accent-blue);
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #abb2bf;
+            margin-bottom: 30px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-channel {
+            display: inline-block;
+            width: 100%;
+            background: var(--accent-blue);
+            color: #000;
+            text-decoration: none;
+            padding: 15px;
+            border-radius: 15px;
+            font-weight: 900;
+            font-size: 14px;
+            margin-top: 20px;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-channel:active {
+            transform: scale(0.95);
+        }
+
+        .footer-text {
+            position: absolute;
+            bottom: 30px;
+            font-size: 11px;
+            color: #555;
+            letter-spacing: 3px;
+            font-family: 'Orbitron', sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="icon-box">🛠️</div>
+        
+        <div class="status-badge">Texnik xizmat ko'rsatish</div>
+        
+        <h1>Vaqtincha to'xtatildi</h1>
+        
+        <div class="info-card">
+            <p>Ilova texnik sabablarga ko'ra vaqtincha faol emas. Biz tizimni yangilayapmiz va imkoniyatlarni kengaytiryapmiz.</p>
+            <p style="font-size: 13px; margin-bottom: 0;">Keltirilgan noqulayliklar uchun uzr so'raymiz. Tez orada qaytamiz!</p>
+        </div>
+
+        <a href="https://t.me/OzsStudio" class="btn-channel">Yangiliklarni kuzatish</a>
+    </div>
+
+    <div class="footer-text">OZS STUDIO PRO</div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.enableClosingConfirmation();
+        
+        // Agar kerak bo'lsa, haptic feedback berish
+        window.onload = () => {
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.notificationOccurred('warning');
+            }
+        };
+    </script>
+</body>
+</html>
