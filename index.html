@@ -1,158 +1,362 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>OZS TAP - Texnik To'xtalish</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --bg-dark: #07090f;
-            --accent-blue: #00e5ff;
-            --accent-gold: #ffd700;
-            --text-white: #ffffff;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>OZS TAP - LEAGUE EDITION</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-        }
+<style>
+  :root {
+    --bg-dark: #07080c;
+    --bg-card: #131622;
+    --accent-blue: #00e5ff;
+    --accent-gold: #ffd700;
+    --text-white: #ffffff;
+  }
 
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: var(--bg-dark);
-            background-image: 
-                radial-gradient(circle at 50% 20%, #1a1f35 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, #0d1117 0%, transparent 50%);
-            color: var(--text-white);
-            height: 100dvh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            text-align: center;
-            padding: 20px;
-        }
+  * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; margin: 0; padding: 0; }
 
-        .container {
-            max-width: 400px;
-            width: 100%;
-        }
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-white);
+    height: 100dvh; width: 100vw;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
 
-        .icon-box {
-            font-size: 80px;
-            margin-bottom: 20px;
-            filter: drop-shadow(0 0 20px var(--accent-blue));
-            animation: pulse 2s infinite;
-        }
+  /* Header & League Info */
+  .header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .league-badge { 
+    padding: 5px 12px; border-radius: 20px; font-family: 'Orbitron'; font-size: 10px; font-weight: 900;
+    text-transform: uppercase; border: 1px solid var(--accent-blue); color: var(--accent-blue);
+    box-shadow: 0 0 10px rgba(0,229,255,0.2);
+  }
 
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 1; }
-        }
+  .score-section { text-align: center; margin-top: 5vh; }
+  .score-section h1 { font-size: 45px; font-weight: 900; color: var(--accent-gold); font-family: 'Orbitron'; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
+  .league-name { font-size: 12px; color: #888; letter-spacing: 2px; margin-top: 5px; font-weight: 700; }
 
-        h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 28px;
-            color: var(--accent-blue);
-            margin-bottom: 15px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
+  /* Main Coin Area */
+  .game-container { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; }
+  .main-coin {
+    width: 70vw; height: 70vw; max-width: 280px; max-height: 280px;
+    background: radial-gradient(circle, #ffea00 0%, #ff9500 70%, #cc7a00 100%);
+    border-radius: 50%; display: flex; justify-content: center; align-items: center;
+    box-shadow: 0 0 50px rgba(255,149,0,0.3), inset 0 0 20px rgba(255,255,255,0.5);
+    border: 8px solid #a36200; font-size: 90px;
+    transition: transform 0.05s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+  }
+  .main-coin:active { transform: scale(0.94); }
 
-        p {
-            font-size: 16px;
-            line-height: 1.6;
-            color: #abb2bf;
-            margin-bottom: 30px;
-        }
+  /* Tapping Animation */
+  .tap-num { position: absolute; color: white; font-size: 32px; font-weight: 900; pointer-events: none; animation: floatUp 0.7s ease-out forwards; font-family: 'Orbitron'; z-index: 100; }
+  @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-120px) scale(1.5); opacity: 0; } }
 
-        .status-badge {
-            display: inline-block;
-            background: rgba(255, 215, 0, 0.1);
-            border: 1px solid var(--accent-gold);
-            color: var(--accent-gold);
-            padding: 8px 16px;
-            border-radius: 50px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-bottom: 20px;
-            font-family: 'Orbitron', sans-serif;
-        }
+  /* Energy Bar */
+  .status-panel { padding: 20px 30px 40px; }
+  .energy-info { display: flex; justify-content: space-between; font-family: 'Orbitron'; font-size: 11px; margin-bottom: 8px; }
+  .bar-bg { width: 100%; height: 14px; background: #1a1e2b; border-radius: 10px; border: 1px solid #333; overflow: hidden; }
+  .bar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #00e5ff, #0077ff); transition: width 0.2s; box-shadow: 0 0 10px rgba(0,229,255,0.5); }
 
-        .info-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 20px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-        }
+  /* Navigation */
+  .navbar {
+    display: flex; background: var(--bg-card); padding: 12px 10px calc(15px + env(safe-area-inset-bottom, 0px));
+    border-radius: 25px 25px 0 0; border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .nav-btn { flex: 1; background: transparent; border: none; color: #666; font-size: 10px; font-weight: 700; text-align: center; }
+  .nav-btn span { display: block; font-size: 20px; margin-bottom: 4px; }
+  .nav-btn.active { color: var(--accent-blue); }
 
-        .btn-channel {
-            display: inline-block;
-            width: 100%;
-            background: var(--accent-blue);
-            color: #000;
-            text-decoration: none;
-            padding: 15px;
-            border-radius: 15px;
-            font-weight: 900;
-            font-size: 14px;
-            margin-top: 20px;
-            transition: 0.3s;
-            text-transform: uppercase;
-        }
+  /* Modals */
+  .modal {
+    position: fixed; bottom: -100%; left: 0; width: 100%; height: 80dvh;
+    background: var(--bg-card); border-radius: 30px 30px 0 0;
+    z-index: 1000; transition: 0.4s; padding: 30px 20px; overflow-y: auto;
+    border-top: 3px solid var(--accent-blue);
+  }
+  .modal.open { bottom: 0; }
+  .modal-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-family: 'Orbitron'; }
+  
+  .item-card {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+    padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .btn-buy { background: var(--accent-blue); color: #000; border: none; padding: 10px 15px; border-radius: 10px; font-weight: 800; }
+  .btn-buy:disabled { background: #333; color: #666; }
 
-        .btn-channel:active {
-            transform: scale(0.95);
-        }
-
-        .footer-text {
-            position: absolute;
-            bottom: 30px;
-            font-size: 11px;
-            color: #555;
-            letter-spacing: 3px;
-            font-family: 'Orbitron', sans-serif;
-        }
-    </style>
+  #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 900; backdrop-filter: blur(5px); }
+</style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="icon-box">🛠️</div>
-        
-        <div class="status-badge">Texnik xizmat ko'rsatish</div>
-        
-        <h1>Vaqtincha to'xtatildi</h1>
-        
-        <div class="info-card">
-            <p>Ilova texnik sabablarga ko'ra vaqtincha faol emas. Biz tizimni yangilayapmiz va imkoniyatlarni kengaytiryapmiz.</p>
-            <p style="font-size: 13px; margin-bottom: 0;">Keltirilgan noqulayliklar uchun uzr so'raymiz. Tez orada qaytamiz!</p>
-        </div>
+<div class="header">
+  <div class="league-badge" id="leagueBadge">Bronze</div>
+  <div style="font-family:'Orbitron'; font-size:12px; color:var(--accent-blue)">OZS PRO</div>
+</div>
 
-        <a href="https://t.me/OzsStudio" class="btn-channel">Yangiliklarni kuzatish</a>
-    </div>
+<div class="score-section">
+  <h1 id="balance">0</h1>
+  <div class="league-name" id="leagueName">BRONZE LEAGUE</div>
+</div>
 
-    <div class="footer-text">OZS STUDIO PRO</div>
+<div class="game-container" id="tapSurface">
+  <div class="main-coin" id="coinBtn">🪙</div>
+</div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.enableClosingConfirmation();
-        
-        // Agar kerak bo'lsa, haptic feedback berish
-        window.onload = () => {
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.notificationOccurred('warning');
-            }
-        };
-    </script>
+<div class="status-panel">
+  <div class="energy-info">
+    <span>⚡ ENERGY</span>
+    <span id="energyVal">1000/1000</span>
+  </div>
+  <div class="bar-bg"><div class="bar-fill" id="energyFill"></div></div>
+</div>
+
+<div class="navbar">
+  <button class="nav-btn" onclick="openM('boostM')"><span>🚀</span>Boost</button>
+  <button class="nav-btn" onclick="openM('taskM')"><span>📋</span>Tasks</button>
+  <button class="nav-btn" onclick="openM('spinM')"><span>🎡</span>Spin</button>
+  <button class="nav-btn" onclick="openM('statsM')"><span>📊</span>Leagues</button>
+</div>
+
+<div id="overlay" onclick="closeAll()"></div>
+
+<div id="boostM" class="modal">
+  <div class="modal-h"><h2>Boosters</h2><span onclick="closeAll()">✕</span></div>
+  <div id="boostList"></div>
+  <hr style="opacity:0.1; margin: 20px 0;">
+  <div class="item-card">
+    <div><p style="font-weight:700;">Full Tank ⚡</p><p id="refillLabel" style="font-size:12px; color:var(--accent-blue);">Qoldi: 3/3</p></div>
+    <button id="refillBtn" class="btn-buy" onclick="useRefill()">TO'LDIRISH</button>
+  </div>
+</div>
+
+<div id="taskM" class="modal">
+  <div class="modal-h"><h2>Topshiriqlar</h2><span onclick="closeAll()">✕</span></div>
+  <div id="taskList"></div>
+</div>
+
+<div id="spinM" class="modal">
+  <div class="modal-h"><h2>Omadli Spin</h2><span onclick="closeAll()">✕</span></div>
+  <div style="text-align:center; padding: 40px 0;">
+    <div id="wheel" style="font-size:100px; transition: 3s cubic-bezier(0.1, 0, 0.1, 1);">🎡</div>
+    <p style="margin:20px 0; color:#888;">Kuniga faqat 1 marta aylantirish mumkin</p>
+    <button id="spinBtn" class="btn-buy" style="width:100%; height:55px;" onclick="doSpin()">AYLANTIRISH</button>
+  </div>
+</div>
+
+<div id="statsM" class="modal">
+  <div class="modal-h"><h2>Ligalar</h2><span onclick="closeAll()">✕</span></div>
+  <div id="leagueList"></div>
+</div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+// 1. DATA
+let coins = Number(localStorage.getItem("ozs_coins")) || 0;
+let energy = Number(localStorage.getItem("ozs_energy")) || 1000;
+let tapLvl = Number(localStorage.getItem("ozs_tapLvl")) || 0;
+let limitLvl = Number(localStorage.getItem("ozs_limitLvl")) || 0;
+let refillCount = Number(localStorage.getItem("ozs_refills")) || 3;
+let lastRefillDate = localStorage.getItem("ozs_refillDate") || "";
+let lastSpinDate = localStorage.getItem("ozs_spinDate") || "";
+let completedTasks = JSON.parse(localStorage.getItem("ozs_tasks")) || [];
+
+const tapPowers = [1, 2, 5, 10, 20, 50, 100];
+const limits = [1000, 2000, 5000, 10000, 25000, 50000, 100000];
+const costs = [0, 1000, 5000, 20000, 100000, 500000, 2000000];
+
+// 2. LEAGUE SYSTEM (10 Leagues)
+const leagues = [
+    { name: "Bronze", min: 0, color: "#cd7f32" },
+    { name: "Silver", min: 10000, color: "#c0c0c0" },
+    { name: "Gold", min: 50000, color: "#ffd700" },
+    { name: "Platinum", min: 250000, color: "#e5e4e2" },
+    { name: "Diamond", min: 1000000, color: "#b9f2ff" },
+    { name: "Elite", min: 5000000, color: "#ff00ff" },
+    { name: "Master", min: 25000000, color: "#ff4d00" },
+    { name: "Grandmaster", min: 100000000, color: "#00ff88" },
+    { name: "Legendary", min: 500000000, color: "#ff0055" },
+    { name: "Red Diamond", min: 1000000000, color: "#ff0000" }
+];
+
+// 3. TASKS
+const tasks = [
+    { id: 't1', title: '10,000 tanga yig\'ing', goal: 10000, reward: 10000 },
+    { id: 't2', title: '100,000 tanga yig\'ing', goal: 100000, reward: 500000 },
+    { id: 't3', title: '1 mln tanga yig\'ing', goal: 1000000, reward: 1000000 },
+    { id: 't4', title: 'Baraban aylantiring', goal: 'spin', reward: 10000 }
+];
+
+function save() {
+    localStorage.setItem("ozs_coins", coins);
+    localStorage.setItem("ozs_energy", energy);
+    localStorage.setItem("ozs_tapLvl", tapLvl);
+    localStorage.setItem("ozs_limitLvl", limitLvl);
+    localStorage.setItem("ozs_refills", refillCount);
+    localStorage.setItem("ozs_refillDate", lastRefillDate);
+    localStorage.setItem("ozs_spinDate", lastSpinDate);
+    localStorage.setItem("ozs_tasks", JSON.stringify(completedTasks));
+}
+
+function updateUI() {
+    document.getElementById("balance").innerText = Math.floor(coins).toLocaleString();
+    document.getElementById("energyVal").innerText = Math.floor(energy) + "/" + limits[limitLvl];
+    document.getElementById("energyFill").style.width = (energy / limits[limitLvl] * 100) + "%";
+
+    // Update League
+    let currentLeague = leagues[0];
+    leagues.forEach(l => { if(coins >= l.min) currentLeague = l; });
+    
+    const badge = document.getElementById("leagueBadge");
+    badge.innerText = currentLeague.name;
+    badge.style.color = currentLeague.color;
+    badge.style.borderColor = currentLeague.color;
+    document.getElementById("leagueName").innerText = currentLeague.name + " LEAGUE";
+
+    // Spin Check
+    const today = new Date().toLocaleDateString();
+    const spinBtn = document.getElementById("spinBtn");
+    if(lastSpinDate === today) {
+        spinBtn.disabled = true;
+        spinBtn.innerText = "ERTAGA QAYTING";
+    }
+
+    // Refill Check
+    if(lastRefillDate !== today) { refillCount = 3; lastRefillDate = today; }
+    document.getElementById("refillLabel").innerText = "Qoldi: " + refillCount + "/3";
+    document.getElementById("refillBtn").disabled = refillCount <= 0;
+
+    renderBoosts();
+    renderTasks();
+    renderLeagues();
+}
+
+function renderBoosts() {
+    let h = "";
+    // MultiTap
+    let nextTap = tapLvl + 1;
+    h += `<div class="item-card"><div><p style="font-weight:700;">Multi-Tap (Lvl ${nextTap})</p><p style="font-size:12px; color:#888;">+${tapPowers[nextTap] || 'MAX'}</p></div>
+    <button class="btn-buy" onclick="buy('tap')" ${nextTap>=7?'disabled':''}>${costs[nextTap] || 'MAX'}</button></div>`;
+    // Limit
+    let nextLim = limitLvl + 1;
+    h += `<div class="item-card"><div><p style="font-weight:700;">Energy Limit (Lvl ${nextLim})</p><p style="font-size:12px; color:#888;">${limits[nextLim] || 'MAX'}</p></div>
+    <button class="btn-buy" onclick="buy('lim')" ${nextLim>=7?'disabled':''}>${costs[nextLim] || 'MAX'}</button></div>`;
+    document.getElementById("boostList").innerHTML = h;
+}
+
+function renderTasks() {
+    let h = "";
+    tasks.forEach(t => {
+        const done = completedTasks.includes(t.id);
+        const canClaim = !done && (t.goal === 'spin' ? lastSpinDate === new Date().toLocaleDateString() : coins >= t.goal);
+        h += `<div class="item-card"><div><p style="font-weight:700;">${t.title}</p><p style="font-size:12px; color:var(--accent-gold);">+${t.reward.toLocaleString()}</p></div>
+        <button class="btn-buy" onclick="claimTask('${t.id}')" ${!canClaim?'disabled':''}>${done?'Bajarildi':(canClaim?'OLISH':'KUTISH')}</button></div>`;
+    });
+    document.getElementById("taskList").innerHTML = h;
+}
+
+function renderLeagues() {
+    let h = "";
+    leagues.forEach(l => {
+        const isCurrent = document.getElementById("leagueBadge").innerText === l.name;
+        h += `<div class="item-card" style="border-left: 4px solid ${l.color}">
+            <div><p style="font-weight:700; color:${l.color}">${l.name}</p><p style="font-size:11px;">Min: ${l.min.toLocaleString()}</p></div>
+            ${isCurrent ? '<span style="font-size:10px; color:var(--accent-blue)">JORIY</span>' : ''}
+        </div>`;
+    });
+    document.getElementById("leagueList").innerHTML = h;
+}
+
+// 4. CORE ACTIONS
+function handleTap(e) {
+    const power = tapPowers[tapLvl];
+    if (energy < power) return;
+
+    energy -= power;
+    coins += power;
+
+    // Anim
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+    const n = document.createElement("div");
+    n.className = "tap-num"; n.innerText = "+" + power;
+    n.style.left = (x - 20) + "px"; n.style.top = (y - 50) + "px";
+    document.body.appendChild(n);
+    setTimeout(() => n.remove(), 700);
+
+    if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+    updateUI();
+    save();
+}
+
+document.getElementById("tapSurface").addEventListener("touchstart", (e) => { e.preventDefault(); handleTap(e); });
+
+function buy(type) {
+    let current = type === 'tap' ? tapLvl : limitLvl;
+    let cost = costs[current + 1];
+    if(coins >= cost) {
+        coins -= cost;
+        if(type === 'tap') tapLvl++; else limitLvl++;
+        updateUI(); save();
+    }
+}
+
+function useRefill() {
+    if(refillCount > 0) {
+        energy = limits[limitLvl];
+        refillCount--;
+        updateUI(); save();
+        tg.showAlert("Energiya to'ldirildi! ⚡");
+    }
+}
+
+function doSpin() {
+    const today = new Date().toLocaleDateString();
+    if(lastSpinDate === today) return;
+
+    const wheel = document.getElementById("wheel");
+    const rand = 1800 + Math.random() * 2000;
+    wheel.style.transform = `rotate(${rand}deg)`;
+    
+    lastSpinDate = today;
+    
+    setTimeout(() => {
+        const prizes = [1000, 5000, 20000, 100000, 0, 50000];
+        const win = prizes[Math.floor(Math.random()*prizes.length)];
+        coins += win;
+        tg.showAlert(win > 0 ? "Tabriklaymiz! +" + win + " tanga!" : "Bu safar omad kelmadi.");
+        updateUI(); save();
+    }, 3000);
+}
+
+function claimTask(id) {
+    const task = tasks.find(t => t.id === id);
+    if(task && !completedTasks.includes(id)) {
+        coins += task.reward;
+        completedTasks.push(id);
+        updateUI(); save();
+        tg.showAlert("Mukofot olindi! 🎉");
+    }
+}
+
+// 5. AUTO REGEN
+setInterval(() => {
+    if(energy < limits[limitLvl]) {
+        energy += 1.5;
+        if(energy > limits[limitLvl]) energy = limits[limitLvl];
+        updateUI();
+    }
+}, 1000);
+
+function openM(id) { closeAll(); document.getElementById(id).classList.add("open"); document.getElementById("overlay").style.display="block"; }
+function closeAll() { document.querySelectorAll(".modal").forEach(m => m.classList.remove("open")); document.getElementById("overlay").style.display="none"; }
+
+window.onload = updateUI;
+</script>
 </body>
 </html>
