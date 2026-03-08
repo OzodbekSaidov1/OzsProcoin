@@ -3,11 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>OZS TAP - Final Masterpiece</title>
+<title>OZS TAP - Connected Edition</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
 <style>
+  /* Sizning mavjud stillaringiz o'zgarishsiz qoldi */
   :root {
     --bg-dark: #05060a;
     --bg-card: #121420;
@@ -119,7 +123,7 @@
 </div>
 
 <div class="header">
-  <div>PLAYER: <span id="userDisplay" style="color:white">SAIDOV て</span></div>
+  <div>PLAYER: <span id="userDisplay" style="color:white">Yuklanmoqda...</span></div>
   <div style="letter-spacing: 2px;">OZS STUDIO PRO</div>
 </div>
 
@@ -240,8 +244,28 @@
 </div>
 
 <script>
-const tg = window.Telegram.WebApp;
-if(tg) { tg.expand(); tg.enableClosingConfirmation(); }
+// --- FIREBASE INTEGRATION ---
+const firebaseConfig = {
+  apiKey: "AIzaSyB-CdM9RSShEeaIEniz_PXwiyT6lONO0mw",
+  authDomain: "ozs-tap-db.firebaseapp.com",
+  databaseURL: "https://ozs-tap-db-default-rtdb.firebaseio.com", 
+  projectId: "ozs-tap-db",
+  storageBucket: "ozs-tap-db.firebasestorage.app",
+  messagingSenderId: "604503116519",
+  appId: "1:604503116519:web:faa790d66e106d067db042",
+  measurementId: "G-DX6ZVPFCVS"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const tgApp = window.Telegram.WebApp;
+if(tgApp) { tgApp.expand(); tgApp.enableClosingConfirmation(); }
+
+// Foydalanuvchi ma'lumotlarini olish
+const telegramUser = tgApp.initDataUnsafe?.user || { id: "local_test", first_name: "Saidov て" };
+const userId = telegramUser.id;
+document.getElementById("userDisplay").innerText = telegramUser.first_name.toUpperCase();
 
 // GAME STATE
 let coins = Number(localStorage.getItem("ozs_fb_coins")) || 0;
@@ -259,6 +283,34 @@ const limits = [1000, 2000, 4000, 8000, 10000, 100000, 999999999];
 const speeds = [1, 2, 5, 10, 20, 30, 40, 50, 100];
 const tapPowers = [1, 4, 12, 24, 48, 100];
 
+// --- SERVER SYNC FUNCTIONS ---
+function syncWithServer() {
+    db.ref('users/' + userId).update({
+        username: telegramUser.first_name,
+        coins: Math.floor(coins),
+        energy: Math.floor(energy),
+        lastActive: Date.now(),
+        levels: { tap: tapLvl, limit: limitLvl, speed: speedLvl }
+    });
+}
+
+// Bazadan ma'lumotni yuklash (O'yin boshida)
+function loadFromServer() {
+    db.ref('users/' + userId).once('value').then((snapshot) => {
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            // Faqat agar serverdagi ball ko'p bo'lsa yangilaymiz (xavfsizlik uchun)
+            if (data.coins > coins) coins = data.coins;
+            if (data.levels) {
+                tapLvl = data.levels.tap || 0;
+                limitLvl = data.levels.limit || 0;
+                speedLvl = data.levels.speed || 0;
+            }
+            updateUI();
+        }
+    });
+}
+
 function save() {
   localStorage.setItem("ozs_fb_coins", coins);
   localStorage.setItem("ozs_fb_energy", energy);
@@ -270,6 +322,7 @@ function save() {
   localStorage.setItem("ozs_fb_bonusDate", lastBonusDate);
   localStorage.setItem("ozs_fb_streak", bonusStreak);
   localStorage.setItem("ozs_fb_lastTime", Date.now()); 
+  syncWithServer(); // Har safar save bo'lganda bazaga ham yozadi
 }
 
 // OFFLINE RECHARGE CALCULATION
@@ -313,7 +366,7 @@ function handleTap(x, y) {
 
   if (limitLvl < 6) {
     if (energy <= 0) {
-      if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+      if (tgApp.HapticFeedback) tgApp.HapticFeedback.notificationOccurred('warning');
       return;
     }
     actualPower = Math.min(energy, power);
@@ -325,7 +378,7 @@ function handleTap(x, y) {
   coinBtn.style.transform = "scale(0.92) translateZ(0)";
   setTimeout(() => { coinBtn.style.transform = "scale(1) translateZ(0)"; }, 50);
 
-  if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+  if (tgApp.HapticFeedback) tgApp.HapticFeedback.impactOccurred('medium');
   updateUI();
 }
 
@@ -362,7 +415,7 @@ function updateUI() {
   save();
 }
 
-// BOOSTERS ENGINE (Past narxlar bilan)
+// BOOSTERS ENGINE
 function showTab(type) {
   document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + type).classList.add('active');
@@ -413,10 +466,10 @@ function useFullTank() {
     coins -= cost;
     energy = limits[limitLvl];
     if (refillsLeft > 0) refillsLeft--;
-    tg.showAlert("⚡ Energiya to'ldirildi!");
+    tgApp.showAlert("⚡ Energiya to'ldirildi!");
     updateUI();
     showTab('special');
-  } else { tg.showAlert("Mablag' yetarli emas!"); }
+  } else { tgApp.showAlert("Mablag' yetarli emas!"); }
 }
 
 // LUCKY SPIN LOGIC
@@ -426,7 +479,7 @@ function doSpin() {
   if (lastSpinDate === today) return;
   
   if (spinning || coins < 1000) { 
-      if (coins < 1000) tg.showAlert("Aylantirish uchun 1,000 tanga kerak!");
+      if (coins < 1000) tgApp.showAlert("Aylantirish uchun 1,000 tanga kerak!");
       return;
   }
   
@@ -444,7 +497,7 @@ function doSpin() {
     const prizes = [25000, 5000, 15000, 0, 500000, 5000];
     const win = prizes[Math.floor(Math.random() * prizes.length)];
     coins += win;
-    tg.showAlert(win > 0 ? "Tabriklaymiz! +" + win + " 🪙" : "Bugun omad kelmadi. Ertaga urunib ko'ring!");
+    tgApp.showAlert(win > 0 ? "Tabriklaymiz! +" + win + " 🪙" : "Bugun omad kelmadi. Ertaga urunib ko'ring!");
     updateUI();
   }, 4100);
 }
@@ -479,7 +532,6 @@ function claimDailyBonus() {
   let reward = 10000;
   let message = "Tabriklaymiz! 10,000 tanga olindi.";
 
-  // Har 100 kunda maxsus bonus
   if (bonusStreak % 100 === 0) {
     reward = 1000000;
     message = "DAHSHAT! " + bonusStreak + "-kunlik maxsus bonus: 1,000,000 tanga!";
@@ -492,11 +544,7 @@ function claimDailyBonus() {
   updateUI();
   updateBonusUI();
   
-  if (tg.showAlert) {
-    tg.showAlert(message);
-  } else {
-    alert(message);
-  }
+  tgApp.showAlert(message);
 }
 
 // AUTO ENERGY REGEN (Active App)
@@ -508,6 +556,9 @@ setInterval(() => {
     updateUI();
   }
 }, 1000);
+
+// Har 30 soniyada bazani avtomatik yangilab turish (Onlaynlik uchun)
+setInterval(syncWithServer, 30000);
 
 // MODAL CONTROLS
 function openM(id) {
@@ -522,8 +573,9 @@ function closeAll() {
   document.getElementById("overlay").style.display = "none";
 }
 
-// Sahifa yuklanganda offline energiyani hisoblash
+// Sahifa yuklanganda
 window.onload = () => {
+  loadFromServer();
   calculateOfflineEnergy();
   updateUI();
 };
