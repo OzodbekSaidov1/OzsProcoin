@@ -1,362 +1,713 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>OZS TAP - LEAGUE EDITION</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>OZS Mines</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg: #05060a;
+            --card: #0d0f18;
+            --gold: #ffcc00;
+            --green: #00ff88;
+            --red: #ff3b3b;
+            --blue: #00cfff;
+            --border: rgba(255,204,0,0.15);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
 
-<style>
-  :root {
-    --bg-dark: #07080c;
-    --bg-card: #131622;
-    --accent-blue: #00e5ff;
-    --accent-gold: #ffd700;
-    --text-white: #ffffff;
-  }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg);
+            color: white;
+            min-height: 100dvh;
+            display: flex; flex-direction: column;
+            background-image:
+                radial-gradient(ellipse at 30% 0%, rgba(0,207,255,0.07) 0%, transparent 55%),
+                radial-gradient(ellipse at 70% 100%, rgba(255,204,0,0.05) 0%, transparent 55%);
+            overflow-x: hidden;
+        }
 
-  * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; margin: 0; padding: 0; }
+        /* INTRO */
+        #intro {
+            position: fixed; inset: 0; background: #000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; animation: fadeOut 0.8s forwards 2.2s;
+        }
+        @keyframes fadeOut { to { opacity:0; visibility:hidden; } }
+        .intro-icon { font-size: 4rem; animation: bounce 0.8s ease-out both; }
+        .intro-title { font-family:'Orbitron',sans-serif; font-size:2.2rem; font-weight:900; color:transparent; -webkit-text-stroke:2px var(--gold); margin:10px 0 6px; animation: zoomIn 1.5s both 0.3s; }
+        .intro-sub { font-size:0.7rem; letter-spacing:6px; color:#444; font-weight:900; animation: fadeIn 1s both 0.8s; }
+        @keyframes bounce  { 0%{transform:scale(0) rotate(-30deg);opacity:0} 70%{transform:scale(1.2) rotate(5deg)} 100%{transform:scale(1) rotate(0)} }
+        @keyframes zoomIn  { from{transform:scale(0.3);opacity:0} to{transform:scale(1);opacity:1} }
+        @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
 
-  body {
-    font-family: 'Montserrat', sans-serif;
-    background: var(--bg-dark);
-    color: var(--text-white);
-    height: 100dvh; width: 100vw;
-    overflow: hidden;
-    display: flex; flex-direction: column;
-  }
+        /* HEADER */
+        .header {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:14px 16px 10px;
+            background:rgba(0,0,0,0.5);
+            border-bottom:1px solid var(--border);
+            flex-shrink:0;
+        }
+        .logo { font-family:'Orbitron',sans-serif; font-size:0.9rem; font-weight:900; color:var(--gold); text-shadow:0 0 12px rgba(255,204,0,0.4); }
+        .bal-chip {
+            display:flex; align-items:center; gap:6px;
+            background:rgba(255,204,0,0.07); border:1px solid rgba(255,204,0,0.22);
+            border-radius:20px; padding:6px 13px;
+        }
+        .bal-chip .bv { font-family:'Orbitron',sans-serif; font-size:0.82rem; font-weight:900; color:var(--gold); }
+        .bal-chip .bl { font-size:0.6rem; color:rgba(255,204,0,0.45); font-weight:700; }
 
-  /* Header & League Info */
-  .header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
-  .league-badge { 
-    padding: 5px 12px; border-radius: 20px; font-family: 'Orbitron'; font-size: 10px; font-weight: 900;
-    text-transform: uppercase; border: 1px solid var(--accent-blue); color: var(--accent-blue);
-    box-shadow: 0 0 10px rgba(0,229,255,0.2);
-  }
+        /* MAIN SCROLL */
+        .main { flex:1; overflow-y:auto; padding:16px 14px 30px; display:flex; flex-direction:column; gap:14px; }
 
-  .score-section { text-align: center; margin-top: 5vh; }
-  .score-section h1 { font-size: 45px; font-weight: 900; color: var(--accent-gold); font-family: 'Orbitron'; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
-  .league-name { font-size: 12px; color: #888; letter-spacing: 2px; margin-top: 5px; font-weight: 700; }
+        /* BET PANEL */
+        .panel {
+            background:var(--card); border:1px solid var(--border);
+            border-radius:16px; padding:16px;
+        }
+        .panel-title { font-family:'Orbitron',sans-serif; font-size:0.7rem; color:rgba(255,255,255,0.35); letter-spacing:2px; margin-bottom:12px; }
 
-  /* Main Coin Area */
-  .game-container { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; }
-  .main-coin {
-    width: 70vw; height: 70vw; max-width: 280px; max-height: 280px;
-    background: radial-gradient(circle, #ffea00 0%, #ff9500 70%, #cc7a00 100%);
-    border-radius: 50%; display: flex; justify-content: center; align-items: center;
-    box-shadow: 0 0 50px rgba(255,149,0,0.3), inset 0 0 20px rgba(255,255,255,0.5);
-    border: 8px solid #a36200; font-size: 90px;
-    transition: transform 0.05s cubic-bezier(0.17, 0.67, 0.83, 0.67);
-  }
-  .main-coin:active { transform: scale(0.94); }
+        .quick-bets { display:flex; gap:6px; margin-bottom:10px; }
+        .qb {
+            flex:1; padding:7px 2px; background:rgba(255,204,0,0.07);
+            border:1px solid rgba(255,204,0,0.2); border-radius:8px;
+            color:var(--gold); font-family:'Orbitron',sans-serif;
+            font-size:0.62rem; font-weight:700; cursor:pointer;
+            transition:all 0.15s; text-align:center;
+        }
+        .qb:hover { background:rgba(255,204,0,0.18); transform:translateY(-1px); }
 
-  /* Tapping Animation */
-  .tap-num { position: absolute; color: white; font-size: 32px; font-weight: 900; pointer-events: none; animation: floatUp 0.7s ease-out forwards; font-family: 'Orbitron'; z-index: 100; }
-  @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-120px) scale(1.5); opacity: 0; } }
+        .bet-row { display:flex; align-items:center; gap:10px; }
+        .bet-input-wrap {
+            flex:1; display:flex; align-items:center; gap:8px;
+            background:rgba(255,255,255,0.04); border:1px solid rgba(255,204,0,0.2);
+            border-radius:10px; padding:10px 13px;
+        }
+        .bet-lbl { font-family:'Orbitron',sans-serif; font-size:0.62rem; color:var(--gold); font-weight:700; }
+        .bet-input-wrap input {
+            flex:1; background:transparent; border:none;
+            color:white; font-family:'Orbitron',sans-serif;
+            font-size:0.9rem; font-weight:700; outline:none;
+        }
+        .ozs-tag { font-size:0.65rem; color:rgba(255,204,0,0.45); font-weight:700; background:rgba(255,204,0,0.07); border-radius:5px; padding:2px 7px; }
 
-  /* Energy Bar */
-  .status-panel { padding: 20px 30px 40px; }
-  .energy-info { display: flex; justify-content: space-between; font-family: 'Orbitron'; font-size: 11px; margin-bottom: 8px; }
-  .bar-bg { width: 100%; height: 14px; background: #1a1e2b; border-radius: 10px; border: 1px solid #333; overflow: hidden; }
-  .bar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #00e5ff, #0077ff); transition: width 0.2s; box-shadow: 0 0 10px rgba(0,229,255,0.5); }
+        /* MINES COUNT */
+        .mines-row { display:flex; gap:8px; margin-top:10px; }
+        .mine-opt {
+            flex:1; padding:10px 4px; border-radius:10px; text-align:center;
+            border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.03);
+            cursor:pointer; transition:all 0.15s;
+        }
+        .mine-opt.active { border-color:var(--gold); background:rgba(255,204,0,0.1); }
+        .mine-opt .mo-val { font-family:'Orbitron',sans-serif; font-size:0.85rem; font-weight:900; }
+        .mine-opt .mo-lbl { font-size:0.6rem; color:rgba(255,255,255,0.35); margin-top:3px; font-weight:700; }
+        .mine-opt.active .mo-val { color:var(--gold); }
+        .mine-opt.active .mo-lbl { color:rgba(255,204,0,0.6); }
 
-  /* Navigation */
-  .navbar {
-    display: flex; background: var(--bg-card); padding: 12px 10px calc(15px + env(safe-area-inset-bottom, 0px));
-    border-radius: 25px 25px 0 0; border-top: 1px solid rgba(255,255,255,0.1);
-  }
-  .nav-btn { flex: 1; background: transparent; border: none; color: #666; font-size: 10px; font-weight: 700; text-align: center; }
-  .nav-btn span { display: block; font-size: 20px; margin-bottom: 4px; }
-  .nav-btn.active { color: var(--accent-blue); }
+        /* MULTIPLIER PREVIEW */
+        .mult-preview {
+            display:flex; justify-content:space-between; align-items:center;
+            background:rgba(0,207,255,0.05); border:1px solid rgba(0,207,255,0.15);
+            border-radius:10px; padding:10px 14px; margin-top:10px;
+        }
+        .mp-label { font-size:0.72rem; color:rgba(255,255,255,0.4); font-weight:700; }
+        .mp-vals { display:flex; gap:14px; }
+        .mp-item { text-align:center; }
+        .mp-item .mpv { font-family:'Orbitron',sans-serif; font-size:0.82rem; font-weight:700; color:var(--blue); }
+        .mp-item .mpl { font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:2px; }
 
-  /* Modals */
-  .modal {
-    position: fixed; bottom: -100%; left: 0; width: 100%; height: 80dvh;
-    background: var(--bg-card); border-radius: 30px 30px 0 0;
-    z-index: 1000; transition: 0.4s; padding: 30px 20px; overflow-y: auto;
-    border-top: 3px solid var(--accent-blue);
-  }
-  .modal.open { bottom: 0; }
-  .modal-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-family: 'Orbitron'; }
-  
-  .item-card {
-    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
-    padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
-  }
-  .btn-buy { background: var(--accent-blue); color: #000; border: none; padding: 10px 15px; border-radius: 10px; font-weight: 800; }
-  .btn-buy:disabled { background: #333; color: #666; }
+        /* GAME GRID */
+        .grid-wrap { position:relative; }
+        .grid {
+            display:grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap:8px;
+        }
+        .cell {
+            aspect-ratio:1; border-radius:12px;
+            display:flex; justify-content:center; align-items:center;
+            font-size:1.5rem; cursor:pointer;
+            transition:all 0.15s;
+            background:linear-gradient(135deg, #151825, #0d0f18);
+            border:1px solid rgba(255,255,255,0.08);
+            position:relative; overflow:hidden;
+        }
+        .cell::before {
+            content:''; position:absolute; inset:0; border-radius:12px;
+            background:linear-gradient(135deg, rgba(255,255,255,0.04), transparent);
+        }
+        .cell:hover:not(.revealed):not(.disabled) {
+            border-color:rgba(255,204,0,0.4);
+            background:linear-gradient(135deg, #1e2235, #151825);
+            transform:scale(1.04);
+            box-shadow:0 0 12px rgba(255,204,0,0.15);
+        }
+        .cell.revealed-gem {
+            background:linear-gradient(135deg, #0a2a18, #0d3520);
+            border-color:rgba(0,255,136,0.4);
+            animation:gemReveal 0.3s ease-out;
+            cursor:default;
+        }
+        .cell.revealed-mine {
+            background:linear-gradient(135deg, #2a0a0a, #350d0d);
+            border-color:rgba(255,59,59,0.5);
+            animation:mineReveal 0.4s ease-out;
+            cursor:default;
+        }
+        .cell.show-mine {
+            background:linear-gradient(135deg, #1a0505, #200808);
+            border-color:rgba(255,59,59,0.3);
+            cursor:default;
+        }
+        .cell.disabled { cursor:default; }
+        @keyframes gemReveal  { 0%{transform:scale(0.8);opacity:0.5} 60%{transform:scale(1.1)} 100%{transform:scale(1)} }
+        @keyframes mineReveal { 0%{transform:scale(0.8)} 30%{transform:scale(1.15) rotate(5deg)} 60%{transform:scale(0.95) rotate(-3deg)} 100%{transform:scale(1) rotate(0)} }
 
-  #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 900; backdrop-filter: blur(5px); }
-</style>
+        /* OVERLAY (game not started) */
+        .grid-overlay {
+            position:absolute; inset:0; border-radius:16px;
+            background:rgba(5,6,10,0.75);
+            backdrop-filter:blur(3px);
+            display:flex; flex-direction:column;
+            justify-content:center; align-items:center; gap:6px;
+            z-index:5;
+        }
+        .grid-overlay .ov-icon { font-size:2.5rem; opacity:0.5; }
+        .grid-overlay .ov-txt { font-family:'Orbitron',sans-serif; font-size:0.72rem; color:rgba(255,255,255,0.3); letter-spacing:2px; }
+
+        /* LIVE MULTIPLIER */
+        .live-mult {
+            display:none; flex-direction:column; align-items:center;
+            background:linear-gradient(135deg, rgba(0,255,136,0.06), rgba(0,207,255,0.06));
+            border:1px solid rgba(0,255,136,0.2); border-radius:14px; padding:14px;
+        }
+        .live-mult.visible { display:flex; }
+        .lm-label { font-size:0.65rem; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; }
+        .lm-val { font-family:'Orbitron',sans-serif; font-size:2.4rem; font-weight:900; color:var(--green); text-shadow:0 0 20px rgba(0,255,136,0.4); line-height:1; margin:4px 0; }
+        .lm-potential { font-size:0.75rem; color:rgba(0,255,136,0.6); font-weight:700; }
+
+        /* BUTTONS */
+        .btn {
+            padding:14px; font-family:'Orbitron',sans-serif;
+            font-size:0.82rem; font-weight:700; border:none;
+            border-radius:12px; cursor:pointer;
+            text-transform:uppercase; transition:all 0.2s; letter-spacing:1px;
+            width:100%;
+        }
+        .btn-start {
+            background:linear-gradient(135deg, #1a6e2e, #25a244);
+            color:white; box-shadow:0 4px 20px rgba(37,162,68,0.35);
+        }
+        .btn-start:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 6px 25px rgba(37,162,68,0.5); }
+        .btn-cashout {
+            background:linear-gradient(135deg, #a87800, #ffcc00);
+            color:#000; display:none;
+            animation:pulseCash 1s infinite alternate;
+        }
+        @keyframes pulseCash { from{box-shadow:0 4px 15px rgba(255,204,0,0.3)} to{box-shadow:0 6px 30px rgba(255,204,0,0.7)} }
+        .btn:disabled { background:#111520; color:#333; box-shadow:none; cursor:not-allowed; animation:none; }
+
+        /* RESULT OVERLAY */
+        #result-overlay {
+            position:fixed; inset:0;
+            background:rgba(0,0,0,0.85);
+            backdrop-filter:blur(8px);
+            z-index:100; display:none;
+            flex-direction:column; justify-content:center; align-items:center;
+            gap:10px; padding:30px;
+        }
+        #result-overlay.show { display:flex; }
+        .result-box {
+            width:100%; max-width:340px;
+            border-radius:24px; padding:30px 24px;
+            text-align:center;
+        }
+        .result-box.win  { background:rgba(0,30,15,0.95); border:2px solid var(--green); box-shadow:0 0 40px rgba(0,255,136,0.2); }
+        .result-box.loss { background:rgba(30,0,0,0.95); border:2px solid var(--red); box-shadow:0 0 40px rgba(255,59,59,0.2); }
+        .result-icon { font-size:4rem; margin-bottom:10px; animation:bounce 0.6s both; }
+        .result-title { font-family:'Orbitron',sans-serif; font-size:1.4rem; font-weight:900; margin-bottom:6px; }
+        .result-title.win  { color:var(--green); text-shadow:0 0 20px rgba(0,255,136,0.5); }
+        .result-title.loss { color:var(--red); text-shadow:0 0 20px rgba(255,59,59,0.5); }
+        .result-amount { font-family:'Orbitron',sans-serif; font-size:1.8rem; font-weight:900; margin:10px 0; }
+        .result-amount.win  { color:var(--gold); }
+        .result-amount.loss { color:rgba(255,59,59,0.7); }
+        .result-desc { font-size:0.8rem; color:rgba(255,255,255,0.45); margin-bottom:20px; }
+        .btn-play-again {
+            width:100%; padding:14px; border:none; border-radius:12px;
+            font-family:'Orbitron',sans-serif; font-size:0.85rem; font-weight:900;
+            cursor:pointer; letter-spacing:1px; transition:all 0.2s;
+        }
+        .btn-play-again.win  { background:linear-gradient(135deg,#1a6e2e,#25a244); color:white; }
+        .btn-play-again.loss { background:linear-gradient(135deg,#5a1010,var(--red)); color:white; }
+
+        /* HISTORY strip */
+        .history-strip {
+            display:flex; gap:6px; overflow-x:auto;
+            padding:2px 0; scrollbar-width:none;
+        }
+        .history-strip::-webkit-scrollbar { display:none; }
+        .hs-item {
+            flex-shrink:0; padding:4px 10px; border-radius:20px;
+            font-family:'Orbitron',sans-serif; font-size:0.6rem; font-weight:700;
+        }
+        .hs-item.w { background:rgba(0,255,136,0.1); color:var(--green); border:1px solid rgba(0,255,136,0.25); }
+        .hs-item.l { background:rgba(255,59,59,0.1); color:var(--red); border:1px solid rgba(255,59,59,0.25); }
+
+        /* STATS ROW */
+        .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+        .sc { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px 8px; text-align:center; }
+        .sv { font-family:'Orbitron',sans-serif; font-size:0.9rem; color:var(--gold); font-weight:700; }
+        .sl { font-size:0.6rem; color:rgba(255,255,255,0.3); margin-top:4px; font-weight:700; }
+
+        /* NOTIF */
+        .notif {
+            position:fixed; top:18px; left:50%; transform:translateX(-50%) translateY(-120px);
+            background:var(--card); border:1px solid var(--gold);
+            padding:11px 20px; border-radius:20px;
+            font-family:'Orbitron',sans-serif; font-size:0.75rem; font-weight:900;
+            color:var(--gold); z-index:9999;
+            transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+            box-shadow:0 0 20px rgba(255,204,0,0.25); white-space:nowrap;
+        }
+        .notif.show { transform:translateX(-50%) translateY(0); }
+    </style>
 </head>
 <body>
 
+<!-- INTRO -->
+<div id="intro">
+    <div class="intro-icon">💣</div>
+    <div class="intro-title">OZS MINES</div>
+    <div class="intro-sub">FIND THE GEMS</div>
+</div>
+
+<!-- NOTIF -->
+<div class="notif" id="notif">+0 🪙</div>
+
+<!-- HEADER -->
 <div class="header">
-  <div class="league-badge" id="leagueBadge">Bronze</div>
-  <div style="font-family:'Orbitron'; font-size:12px; color:var(--accent-blue)">OZS PRO</div>
+    <div class="logo">💣 MINES</div>
+    <div class="bal-chip">
+        <span>🪙</span>
+        <div>
+            <div class="bv" id="bal">0</div>
+            <div class="bl">OZS COIN</div>
+        </div>
+    </div>
 </div>
 
-<div class="score-section">
-  <h1 id="balance">0</h1>
-  <div class="league-name" id="leagueName">BRONZE LEAGUE</div>
+<!-- MAIN -->
+<div class="main">
+
+    <!-- BET + SETTINGS -->
+    <div class="panel" id="bet-panel">
+        <div class="panel-title">TIKISH SOZLAMALARI</div>
+        <div class="quick-bets">
+            <button class="qb" onclick="setQB(500)">500</button>
+            <button class="qb" onclick="setQB(1000)">1K</button>
+            <button class="qb" onclick="setQB(5000)">5K</button>
+            <button class="qb" onclick="setQB(10000)">10K</button>
+            <button class="qb" onclick="setQB(50000)">50K</button>
+        </div>
+        <div class="bet-row">
+            <div class="bet-input-wrap">
+                <span class="bet-lbl">TIK:</span>
+                <input type="number" id="bet-inp" value="1000" min="100" step="100">
+                <span class="ozs-tag">🪙 OZS</span>
+            </div>
+        </div>
+
+        <div style="margin-top:12px;">
+            <div class="panel-title">MINALAR SONI</div>
+            <div class="mines-row">
+                <div class="mine-opt active" onclick="selectMines(1,this)">
+                    <div class="mo-val">1 💣</div>
+                    <div class="mo-lbl">Oson</div>
+                </div>
+                <div class="mine-opt" onclick="selectMines(3,this)">
+                    <div class="mo-val">3 💣</div>
+                    <div class="mo-lbl">O'rtacha</div>
+                </div>
+                <div class="mine-opt" onclick="selectMines(5,this)">
+                    <div class="mo-val">5 💣</div>
+                    <div class="mo-lbl">Qiyin</div>
+                </div>
+                <div class="mine-opt" onclick="selectMines(10,this)">
+                    <div class="mo-val">10 💣</div>
+                    <div class="mo-lbl">Ekstremal</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mult-preview" id="mult-preview">
+            <span class="mp-label">MUKOFOT TABLITSA:</span>
+            <div class="mp-vals">
+                <div class="mp-item"><div class="mpv" id="mp1">—</div><div class="mpl">1-qadim</div></div>
+                <div class="mp-item"><div class="mpv" id="mp3">—</div><div class="mpl">3-qadim</div></div>
+                <div class="mp-item"><div class="mpv" id="mp5">—</div><div class="mpl">5-qadim</div></div>
+                <div class="mp-item"><div class="mpv" id="mp10">—</div><div class="mpl">10-qadim</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIVE MULTIPLIER (o'yin paytida) -->
+    <div class="live-mult" id="live-mult">
+        <div class="lm-label">JORIY KOEFFITSIENT</div>
+        <div class="lm-val" id="lm-val">1.00x</div>
+        <div class="lm-potential" id="lm-pot">0 OZS Coin yutasiz</div>
+    </div>
+
+    <!-- GRID -->
+    <div class="grid-wrap">
+        <div class="grid" id="grid"></div>
+        <div class="grid-overlay" id="grid-overlay">
+            <div class="ov-icon">💎</div>
+            <div class="ov-txt">O'YINNI BOSHLANG</div>
+        </div>
+    </div>
+
+    <!-- BUTTONS -->
+    <button class="btn btn-start"   id="start-btn"   onclick="startGame()">🎯 O'YINNI BOSHLASH</button>
+    <button class="btn btn-cashout" id="cashout-btn"  onclick="cashOut()">💰 YECHIB OLISH</button>
+
+    <!-- HISTORY -->
+    <div class="panel">
+        <div class="panel-title">OXIRGI O'YINLAR</div>
+        <div class="history-strip" id="hist-strip">
+            <span style="font-size:0.72rem; color:rgba(255,255,255,0.2);">Hali o'yinlar yo'q...</span>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="panel">
+        <div class="panel-title">STATISTIKA</div>
+        <div class="stats-row">
+            <div class="sc"><div class="sv" id="st-games">0</div><div class="sl">O'YINLAR</div></div>
+            <div class="sc"><div class="sv" id="st-wins">0</div><div class="sl">YUTUQLAR</div></div>
+            <div class="sc"><div class="sv" id="st-profit">0</div><div class="sl">DAROMAD 🪙</div></div>
+        </div>
+    </div>
+
 </div>
 
-<div class="game-container" id="tapSurface">
-  <div class="main-coin" id="coinBtn">🪙</div>
-</div>
-
-<div class="status-panel">
-  <div class="energy-info">
-    <span>⚡ ENERGY</span>
-    <span id="energyVal">1000/1000</span>
-  </div>
-  <div class="bar-bg"><div class="bar-fill" id="energyFill"></div></div>
-</div>
-
-<div class="navbar">
-  <button class="nav-btn" onclick="openM('boostM')"><span>🚀</span>Boost</button>
-  <button class="nav-btn" onclick="openM('taskM')"><span>📋</span>Tasks</button>
-  <button class="nav-btn" onclick="openM('spinM')"><span>🎡</span>Spin</button>
-  <button class="nav-btn" onclick="openM('statsM')"><span>📊</span>Leagues</button>
-</div>
-
-<div id="overlay" onclick="closeAll()"></div>
-
-<div id="boostM" class="modal">
-  <div class="modal-h"><h2>Boosters</h2><span onclick="closeAll()">✕</span></div>
-  <div id="boostList"></div>
-  <hr style="opacity:0.1; margin: 20px 0;">
-  <div class="item-card">
-    <div><p style="font-weight:700;">Full Tank ⚡</p><p id="refillLabel" style="font-size:12px; color:var(--accent-blue);">Qoldi: 3/3</p></div>
-    <button id="refillBtn" class="btn-buy" onclick="useRefill()">TO'LDIRISH</button>
-  </div>
-</div>
-
-<div id="taskM" class="modal">
-  <div class="modal-h"><h2>Topshiriqlar</h2><span onclick="closeAll()">✕</span></div>
-  <div id="taskList"></div>
-</div>
-
-<div id="spinM" class="modal">
-  <div class="modal-h"><h2>Omadli Spin</h2><span onclick="closeAll()">✕</span></div>
-  <div style="text-align:center; padding: 40px 0;">
-    <div id="wheel" style="font-size:100px; transition: 3s cubic-bezier(0.1, 0, 0.1, 1);">🎡</div>
-    <p style="margin:20px 0; color:#888;">Kuniga faqat 1 marta aylantirish mumkin</p>
-    <button id="spinBtn" class="btn-buy" style="width:100%; height:55px;" onclick="doSpin()">AYLANTIRISH</button>
-  </div>
-</div>
-
-<div id="statsM" class="modal">
-  <div class="modal-h"><h2>Ligalar</h2><span onclick="closeAll()">✕</span></div>
-  <div id="leagueList"></div>
+<!-- RESULT OVERLAY -->
+<div id="result-overlay">
+    <div class="result-box" id="result-box">
+        <div class="result-icon" id="result-icon">🎉</div>
+        <div class="result-title" id="result-title">YUTDINGIZ!</div>
+        <div class="result-amount" id="result-amount">+5,000 🪙</div>
+        <div class="result-desc" id="result-desc"></div>
+        <button class="btn-play-again" id="play-again-btn" onclick="closeResult()">🔄 QAYTA O'YNASH</button>
+    </div>
 </div>
 
 <script>
-const tg = window.Telegram.WebApp;
+// ============ TELEGRAM ============
+const tg = window.Telegram?.WebApp || {
+    expand:()=>{}, HapticFeedback:{impactOccurred:()=>{},notificationOccurred:()=>{}}
+};
 tg.expand();
 
-// 1. DATA
-let coins = Number(localStorage.getItem("ozs_coins")) || 0;
-let energy = Number(localStorage.getItem("ozs_energy")) || 1000;
-let tapLvl = Number(localStorage.getItem("ozs_tapLvl")) || 0;
-let limitLvl = Number(localStorage.getItem("ozs_limitLvl")) || 0;
-let refillCount = Number(localStorage.getItem("ozs_refills")) || 3;
-let lastRefillDate = localStorage.getItem("ozs_refillDate") || "";
-let lastSpinDate = localStorage.getItem("ozs_spinDate") || "";
-let completedTasks = JSON.parse(localStorage.getItem("ozs_tasks")) || [];
+// ============ SHARED OZS COIN (OZS TAP + AVIATOR bilan umumiy) ============
+const getCoins  = ()    => Number(localStorage.getItem("ozs_f_coins")) || 0;
+const setCoins  = (v)   => {
+    const s = Math.max(0, Math.floor(v));
+    localStorage.setItem("ozs_f_coins", s);
+    if (s > Number(localStorage.getItem("ozs_f_totalCoins")||0))
+        localStorage.setItem("ozs_f_totalCoins", s);
+};
 
-const tapPowers = [1, 2, 5, 10, 20, 50, 100];
-const limits = [1000, 2000, 5000, 10000, 25000, 50000, 100000];
-const costs = [0, 1000, 5000, 20000, 100000, 500000, 2000000];
+// ============ MINES STATE ============
+let M = JSON.parse(localStorage.getItem("ozs_mines") || "null") || {
+    history:[], stats:{ games:0, wins:0, profit:0 }
+};
+const saveM = () => localStorage.setItem("ozs_mines", JSON.stringify(M));
 
-// 2. LEAGUE SYSTEM (10 Leagues)
-const leagues = [
-    { name: "Bronze", min: 0, color: "#cd7f32" },
-    { name: "Silver", min: 10000, color: "#c0c0c0" },
-    { name: "Gold", min: 50000, color: "#ffd700" },
-    { name: "Platinum", min: 250000, color: "#e5e4e2" },
-    { name: "Diamond", min: 1000000, color: "#b9f2ff" },
-    { name: "Elite", min: 5000000, color: "#ff00ff" },
-    { name: "Master", min: 25000000, color: "#ff4d00" },
-    { name: "Grandmaster", min: 100000000, color: "#00ff88" },
-    { name: "Legendary", min: 500000000, color: "#ff0055" },
-    { name: "Red Diamond", min: 1000000000, color: "#ff0000" }
-];
+// ============ GAME STATE ============
+const GRID_SIZE  = 25; // 5x5
+let mineCount    = 1;
+let minePositions= [];
+let revealed     = [];
+let gemsFound    = 0;
+let currentBet   = 0;
+let gameActive   = false;
+let currentMult  = 1.0;
 
-// 3. TASKS
-const tasks = [
-    { id: 't1', title: '10,000 tanga yig\'ing', goal: 10000, reward: 10000 },
-    { id: 't2', title: '100,000 tanga yig\'ing', goal: 100000, reward: 500000 },
-    { id: 't3', title: '1 mln tanga yig\'ing', goal: 1000000, reward: 1000000 },
-    { id: 't4', title: 'Baraban aylantiring', goal: 'spin', reward: 10000 }
-];
-
-function save() {
-    localStorage.setItem("ozs_coins", coins);
-    localStorage.setItem("ozs_energy", energy);
-    localStorage.setItem("ozs_tapLvl", tapLvl);
-    localStorage.setItem("ozs_limitLvl", limitLvl);
-    localStorage.setItem("ozs_refills", refillCount);
-    localStorage.setItem("ozs_refillDate", lastRefillDate);
-    localStorage.setItem("ozs_spinDate", lastSpinDate);
-    localStorage.setItem("ozs_tasks", JSON.stringify(completedTasks));
+// ============ MULTIPLIER TABLE ============
+// Har bir qadim uchun koeffitsient (mines soniga qarab)
+// Safe cells = 25 - mines
+// mult[step] = (safe/(safe-step)) * 0.96 (house edge 4%)
+function calcMult(minesN, step) {
+    const safe = GRID_SIZE - minesN;
+    let m = 1.0;
+    for (let i = 0; i < step; i++) {
+        m *= (safe - i) / (GRID_SIZE - i) > 0
+            ? (GRID_SIZE - i) / (safe - i)
+            : 1;
+    }
+    // 60% yutish uchun: house edge taxminan 10%
+    return Math.max(1.0, m * 0.90);
 }
 
-function updateUI() {
-    document.getElementById("balance").innerText = Math.floor(coins).toLocaleString();
-    document.getElementById("energyVal").innerText = Math.floor(energy) + "/" + limits[limitLvl];
-    document.getElementById("energyFill").style.width = (energy / limits[limitLvl] * 100) + "%";
+// ============ DOM ============
+const $bal      = document.getElementById("bal");
+const $grid     = document.getElementById("grid");
+const $overlay  = document.getElementById("grid-overlay");
+const $startBtn = document.getElementById("start-btn");
+const $cashBtn  = document.getElementById("cashout-btn");
+const $lmVal    = document.getElementById("lm-val");
+const $lmPot    = document.getElementById("lm-pot");
+const $liveMult = document.getElementById("live-mult");
 
-    // Update League
-    let currentLeague = leagues[0];
-    leagues.forEach(l => { if(coins >= l.min) currentLeague = l; });
-    
-    const badge = document.getElementById("leagueBadge");
-    badge.innerText = currentLeague.name;
-    badge.style.color = currentLeague.color;
-    badge.style.borderColor = currentLeague.color;
-    document.getElementById("leagueName").innerText = currentLeague.name + " LEAGUE";
+// ============ INIT ============
+function init() {
+    updateBal();
+    updateMultPreview();
+    buildGrid();
+    renderHistory();
+    updateStats();
+}
+init();
 
-    // Spin Check
-    const today = new Date().toLocaleDateString();
-    const spinBtn = document.getElementById("spinBtn");
-    if(lastSpinDate === today) {
-        spinBtn.disabled = true;
-        spinBtn.innerText = "ERTAGA QAYTING";
+function updateBal() { $bal.textContent = getCoins().toLocaleString("ru-RU"); }
+
+// ============ NOTIF ============
+function notif(txt, clr) {
+    const n = document.getElementById("notif");
+    n.textContent = txt; n.style.borderColor = clr||"var(--gold)"; n.style.color = clr||"var(--gold)";
+    n.classList.add("show");
+    setTimeout(() => n.classList.remove("show"), 2500);
+}
+
+// ============ QUICK BET ============
+function setQB(v) {
+    if (!gameActive) document.getElementById("bet-inp").value = v;
+}
+
+// ============ MINES SELECTOR ============
+function selectMines(n, el) {
+    if (gameActive) return;
+    mineCount = n;
+    document.querySelectorAll(".mine-opt").forEach(e => e.classList.remove("active"));
+    el.classList.add("active");
+    updateMultPreview();
+}
+
+// ============ MULT PREVIEW ============
+function updateMultPreview() {
+    document.getElementById("mp1").textContent  = calcMult(mineCount,1).toFixed(2)+"x";
+    document.getElementById("mp3").textContent  = calcMult(mineCount,3).toFixed(2)+"x";
+    document.getElementById("mp5").textContent  = calcMult(mineCount,5).toFixed(2)+"x";
+    document.getElementById("mp10").textContent = calcMult(mineCount,10).toFixed(2)+"x";
+}
+
+// ============ BUILD GRID ============
+function buildGrid() {
+    $grid.innerHTML = "";
+    for (let i = 0; i < GRID_SIZE; i++) {
+        const cell = document.createElement("div");
+        cell.className = "cell disabled";
+        cell.id = "cell-" + i;
+        cell.textContent = "❓";
+        $grid.appendChild(cell);
+    }
+}
+
+// ============ START GAME ============
+function startGame() {
+    const bet = parseFloat(document.getElementById("bet-inp").value);
+    const bal = getCoins();
+    if (!bet || bet < 100)  { notif("⚠️ Minimal: 100 OZS Coin","var(--red)"); return; }
+    if (bet > bal)          { notif("⚠️ OZS Coin yetarli emas!","var(--red)"); return; }
+
+    setCoins(bal - bet);
+    updateBal();
+    currentBet   = bet;
+    gemsFound    = 0;
+    revealed     = new Array(GRID_SIZE).fill(false);
+    currentMult  = 1.0;
+    gameActive   = true;
+
+    // Place mines RANDOMLY (fair: mines joyi ochilgan katakchaga tegmaydi)
+    minePositions = [];
+    const pool = Array.from({length:GRID_SIZE},(_,i)=>i);
+    for (let i = pool.length-1; i>0; i--) {
+        const j = Math.floor(Math.random()*(i+1));
+        [pool[i],pool[j]]=[pool[j],pool[i]];
+    }
+    minePositions = pool.slice(0, mineCount);
+
+    // UI
+    buildGrid();
+    for (let i = 0; i < GRID_SIZE; i++) {
+        const cell = document.getElementById("cell-"+i);
+        cell.textContent = "💎";
+        cell.classList.remove("disabled");
+        cell.onclick = () => tap(i);
     }
 
-    // Refill Check
-    if(lastRefillDate !== today) { refillCount = 3; lastRefillDate = today; }
-    document.getElementById("refillLabel").innerText = "Qoldi: " + refillCount + "/3";
-    document.getElementById("refillBtn").disabled = refillCount <= 0;
+    $overlay.style.display        = "none";
+    $startBtn.style.display       = "none";
+    $cashBtn.style.display        = "block";
+    $cashBtn.disabled             = true;
+    document.getElementById("bet-panel").style.opacity = "0.5";
+    document.getElementById("bet-panel").style.pointerEvents = "none";
+    $liveMult.classList.add("visible");
+    updateLiveMult();
 
-    renderBoosts();
-    renderTasks();
-    renderLeagues();
+    M.stats.games++;
+    saveM(); updateStats();
+    if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
 }
 
-function renderBoosts() {
-    let h = "";
-    // MultiTap
-    let nextTap = tapLvl + 1;
-    h += `<div class="item-card"><div><p style="font-weight:700;">Multi-Tap (Lvl ${nextTap})</p><p style="font-size:12px; color:#888;">+${tapPowers[nextTap] || 'MAX'}</p></div>
-    <button class="btn-buy" onclick="buy('tap')" ${nextTap>=7?'disabled':''}>${costs[nextTap] || 'MAX'}</button></div>`;
-    // Limit
-    let nextLim = limitLvl + 1;
-    h += `<div class="item-card"><div><p style="font-weight:700;">Energy Limit (Lvl ${nextLim})</p><p style="font-size:12px; color:#888;">${limits[nextLim] || 'MAX'}</p></div>
-    <button class="btn-buy" onclick="buy('lim')" ${nextLim>=7?'disabled':''}>${costs[nextLim] || 'MAX'}</button></div>`;
-    document.getElementById("boostList").innerHTML = h;
+// ============ TAP CELL ============
+function tap(idx) {
+    if (!gameActive || revealed[idx]) return;
+    revealed[idx] = true;
+    const cell = document.getElementById("cell-"+idx);
+
+    if (minePositions.includes(idx)) {
+        // 💥 MINE!
+        cell.classList.add("revealed-mine");
+        cell.textContent = "💥";
+        cell.onclick = null;
+        if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+        setTimeout(() => revealAllMines(idx), 200);
+        setTimeout(() => endGame(false), 700);
+    } else {
+        // 💎 GEM!
+        cell.classList.add("revealed-gem");
+        cell.textContent = "💎";
+        cell.onclick = null;
+        gemsFound++;
+        currentMult = calcMult(mineCount, gemsFound);
+        updateLiveMult();
+        $cashBtn.disabled = false;
+        if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
+
+        // Barcha xavfsiz katakchalar ochildimi?
+        const safeTotal = GRID_SIZE - mineCount;
+        if (gemsFound >= safeTotal) {
+            setTimeout(() => cashOut(), 300);
+        }
+    }
 }
 
-function renderTasks() {
-    let h = "";
-    tasks.forEach(t => {
-        const done = completedTasks.includes(t.id);
-        const canClaim = !done && (t.goal === 'spin' ? lastSpinDate === new Date().toLocaleDateString() : coins >= t.goal);
-        h += `<div class="item-card"><div><p style="font-weight:700;">${t.title}</p><p style="font-size:12px; color:var(--accent-gold);">+${t.reward.toLocaleString()}</p></div>
-        <button class="btn-buy" onclick="claimTask('${t.id}')" ${!canClaim?'disabled':''}>${done?'Bajarildi':(canClaim?'OLISH':'KUTISH')}</button></div>`;
+// ============ REVEAL ALL MINES ============
+function revealAllMines(triggerIdx) {
+    minePositions.forEach(idx => {
+        if (idx !== triggerIdx) {
+            const c = document.getElementById("cell-"+idx);
+            c.classList.add("show-mine");
+            c.textContent = "💣";
+            c.onclick = null;
+        }
     });
-    document.getElementById("taskList").innerHTML = h;
 }
 
-function renderLeagues() {
-    let h = "";
-    leagues.forEach(l => {
-        const isCurrent = document.getElementById("leagueBadge").innerText === l.name;
-        h += `<div class="item-card" style="border-left: 4px solid ${l.color}">
-            <div><p style="font-weight:700; color:${l.color}">${l.name}</p><p style="font-size:11px;">Min: ${l.min.toLocaleString()}</p></div>
-            ${isCurrent ? '<span style="font-size:10px; color:var(--accent-blue)">JORIY</span>' : ''}
-        </div>`;
+// ============ CASH OUT ============
+function cashOut() {
+    if (!gameActive || gemsFound === 0) return;
+    gameActive = false;
+    const win = Math.floor(currentBet * currentMult);
+    const profit = win - currentBet;
+    setCoins(getCoins() + win);
+    updateBal();
+
+    M.stats.wins++;
+    M.stats.profit += profit;
+    M.history.unshift({ w:true, mult:currentMult, bet:currentBet, profit });
+    if (M.history.length > 20) M.history.pop();
+    saveM(); updateStats(); renderHistory();
+
+    showResult(true, win, profit);
+    if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+}
+
+// ============ END GAME (mine hit) ============
+function endGame(won) {
+    gameActive = false;
+    M.history.unshift({ w:false, mult:currentMult, bet:currentBet, profit:-currentBet });
+    if (M.history.length > 20) M.history.pop();
+    saveM(); updateStats(); renderHistory();
+    showResult(false, 0, -currentBet);
+}
+
+// ============ SHOW RESULT ============
+function showResult(won, winAmt, profit) {
+    const overlay = document.getElementById("result-overlay");
+    const box     = document.getElementById("result-box");
+    overlay.classList.add("show");
+    box.className = "result-box " + (won ? "win" : "loss");
+    document.getElementById("result-icon").textContent   = won ? "🎉" : "💥";
+    document.getElementById("result-title").className    = "result-title " + (won?"win":"loss");
+    document.getElementById("result-title").textContent  = won ? "YUTDINGIZ!" : "PORTLADI!";
+    document.getElementById("result-amount").className   = "result-amount " + (won?"win":"loss");
+    document.getElementById("result-amount").textContent = won
+        ? "+" + winAmt.toLocaleString() + " 🪙"
+        : "-" + currentBet.toLocaleString() + " 🪙";
+    document.getElementById("result-desc").textContent = won
+        ? `${gemsFound} ta javohir topdingiz • ${currentMult.toFixed(2)}x koeffitsient`
+        : `Mina topildingiz! ${gemsFound} ta javohir ochgandingiz`;
+    document.getElementById("play-again-btn").className = "btn-play-again " + (won?"win":"loss");
+}
+
+// ============ CLOSE RESULT / RESET ============
+function closeResult() {
+    document.getElementById("result-overlay").classList.remove("show");
+    resetGameUI();
+}
+
+function resetGameUI() {
+    gameActive = false;
+    buildGrid();
+    $overlay.style.display  = "";
+    $startBtn.style.display = "block";
+    $cashBtn.style.display  = "none";
+    document.getElementById("bet-panel").style.opacity = "1";
+    document.getElementById("bet-panel").style.pointerEvents = "auto";
+    $liveMult.classList.remove("visible");
+    updateBal();
+}
+
+// ============ LIVE MULT ============
+function updateLiveMult() {
+    const potential = Math.floor(currentBet * currentMult);
+    $lmVal.textContent = currentMult.toFixed(2) + "x";
+    $lmPot.textContent = potential.toLocaleString() + " OZS Coin yutasiz";
+}
+
+// ============ HISTORY ============
+function renderHistory() {
+    const strip = document.getElementById("hist-strip");
+    if (!M.history.length) {
+        strip.innerHTML = '<span style="font-size:0.72rem;color:rgba(255,255,255,0.2);">Hali o\'yinlar yo\'q...</span>';
+        return;
+    }
+    strip.innerHTML = "";
+    M.history.slice(0,12).forEach(h => {
+        const d = document.createElement("div");
+        d.className = "hs-item " + (h.w ? "w" : "l");
+        d.textContent = h.w ? "+" + Math.abs(h.profit).toLocaleString() : "-" + Math.abs(h.bet).toLocaleString();
+        strip.appendChild(d);
     });
-    document.getElementById("leagueList").innerHTML = h;
 }
 
-// 4. CORE ACTIONS
-function handleTap(e) {
-    const power = tapPowers[tapLvl];
-    if (energy < power) return;
-
-    energy -= power;
-    coins += power;
-
-    // Anim
-    const x = e.touches ? e.touches[0].clientX : e.clientX;
-    const y = e.touches ? e.touches[0].clientY : e.clientY;
-    const n = document.createElement("div");
-    n.className = "tap-num"; n.innerText = "+" + power;
-    n.style.left = (x - 20) + "px"; n.style.top = (y - 50) + "px";
-    document.body.appendChild(n);
-    setTimeout(() => n.remove(), 700);
-
-    if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-    updateUI();
-    save();
+// ============ STATS ============
+function updateStats() {
+    document.getElementById("st-games").textContent  = M.stats.games;
+    document.getElementById("st-wins").textContent   = M.stats.wins;
+    document.getElementById("st-profit").textContent = M.stats.profit >= 0
+        ? "+" + M.stats.profit.toLocaleString()
+        : M.stats.profit.toLocaleString();
 }
 
-document.getElementById("tapSurface").addEventListener("touchstart", (e) => { e.preventDefault(); handleTap(e); });
-
-function buy(type) {
-    let current = type === 'tap' ? tapLvl : limitLvl;
-    let cost = costs[current + 1];
-    if(coins >= cost) {
-        coins -= cost;
-        if(type === 'tap') tapLvl++; else limitLvl++;
-        updateUI(); save();
-    }
-}
-
-function useRefill() {
-    if(refillCount > 0) {
-        energy = limits[limitLvl];
-        refillCount--;
-        updateUI(); save();
-        tg.showAlert("Energiya to'ldirildi! ⚡");
-    }
-}
-
-function doSpin() {
-    const today = new Date().toLocaleDateString();
-    if(lastSpinDate === today) return;
-
-    const wheel = document.getElementById("wheel");
-    const rand = 1800 + Math.random() * 2000;
-    wheel.style.transform = `rotate(${rand}deg)`;
-    
-    lastSpinDate = today;
-    
-    setTimeout(() => {
-        const prizes = [1000, 5000, 20000, 100000, 0, 50000];
-        const win = prizes[Math.floor(Math.random()*prizes.length)];
-        coins += win;
-        tg.showAlert(win > 0 ? "Tabriklaymiz! +" + win + " tanga!" : "Bu safar omad kelmadi.");
-        updateUI(); save();
-    }, 3000);
-}
-
-function claimTask(id) {
-    const task = tasks.find(t => t.id === id);
-    if(task && !completedTasks.includes(id)) {
-        coins += task.reward;
-        completedTasks.push(id);
-        updateUI(); save();
-        tg.showAlert("Mukofot olindi! 🎉");
-    }
-}
-
-// 5. AUTO REGEN
-setInterval(() => {
-    if(energy < limits[limitLvl]) {
-        energy += 1.5;
-        if(energy > limits[limitLvl]) energy = limits[limitLvl];
-        updateUI();
-    }
-}, 1000);
-
-function openM(id) { closeAll(); document.getElementById(id).classList.add("open"); document.getElementById("overlay").style.display="block"; }
-function closeAll() { document.querySelectorAll(".modal").forEach(m => m.classList.remove("open")); document.getElementById("overlay").style.display="none"; }
-
-window.onload = updateUI;
+// Balance sync
+setInterval(updateBal, 2000);
 </script>
 </body>
 </html>
