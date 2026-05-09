@@ -1,619 +1,265 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>OZS Mines</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --bg: #05060a; --card: #0d0f18;
-            --gold: #ffcc00; --green: #00ff88;
-            --red: #ff3b3b; --blue: #00cfff;
-            --purple: #a855f7; --border: rgba(255,204,0,0.15);
-        }
-        * { box-sizing:border-box; margin:0; padding:0; user-select:none; -webkit-tap-highlight-color:transparent; }
-        body {
-            font-family:'Montserrat',sans-serif; background:var(--bg); color:white;
-            min-height:100dvh; display:flex; flex-direction:column;
-            background-image:
-                radial-gradient(ellipse at 30% 0%, rgba(168,85,247,0.08) 0%, transparent 55%),
-                radial-gradient(ellipse at 70% 100%, rgba(255,204,0,0.05) 0%, transparent 55%);
-        }
-
-        /* INTRO */
-        #intro { position:fixed; inset:0; background:#000; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:9999; animation:fadeOut 0.8s forwards 2.2s; }
-        @keyframes fadeOut { to{opacity:0;visibility:hidden} }
-        .intro-icon  { font-size:4rem; animation:bounce 0.8s ease-out both; }
-        .intro-title { font-family:'Orbitron',sans-serif; font-size:2.2rem; font-weight:900; color:transparent; -webkit-text-stroke:2px var(--gold); margin:10px 0 4px; animation:zoomIn 1.5s both 0.3s; }
-        .intro-sub   { font-size:0.65rem; letter-spacing:6px; color:#444; font-weight:900; animation:fadeIn 1s both 0.8s; }
-        .xray-badge  { margin-top:12px; background:rgba(168,85,247,0.2); border:1px solid var(--purple); border-radius:20px; padding:5px 16px; font-size:0.7rem; color:var(--purple); font-weight:900; letter-spacing:2px; animation:fadeIn 1s both 1.2s; }
-        @keyframes bounce { 0%{transform:scale(0) rotate(-30deg);opacity:0} 70%{transform:scale(1.2) rotate(5deg)} 100%{transform:scale(1) rotate(0)} }
-        @keyframes zoomIn { from{transform:scale(0.3);opacity:0} to{transform:scale(1);opacity:1} }
-        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-
-        /* HEADER */
-        .header { display:flex; justify-content:space-between; align-items:center; padding:13px 15px 9px; background:rgba(0,0,0,0.5); border-bottom:1px solid var(--border); flex-shrink:0; }
-        .logo { font-family:'Orbitron',sans-serif; font-size:0.88rem; font-weight:900; color:var(--gold); text-shadow:0 0 12px rgba(255,204,0,0.4); }
-        .bal-chip { display:flex; align-items:center; gap:6px; background:rgba(255,204,0,0.07); border:1px solid rgba(255,204,0,0.22); border-radius:20px; padding:6px 12px; }
-        .bv { font-family:'Orbitron',sans-serif; font-size:0.8rem; font-weight:900; color:var(--gold); }
-        .bl { font-size:0.58rem; color:rgba(255,204,0,0.45); font-weight:700; }
-
-        /* SYNC STATUS */
-        .sync-bar { display:flex; align-items:center; justify-content:space-between; padding:7px 15px; background:rgba(0,255,136,0.04); border-bottom:1px solid rgba(0,255,136,0.1); flex-shrink:0; }
-        .sync-dot { width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green); animation:blink 1.5s infinite; }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        .sync-txt { font-size:0.62rem; color:rgba(0,255,136,0.6); font-weight:700; letter-spacing:1px; margin-left:7px; flex:1; }
-        .sync-val { font-family:'Orbitron',sans-serif; font-size:0.7rem; color:var(--green); font-weight:700; }
-
-        /* XRAY BAR */
-        .xray-bar { display:flex; align-items:center; justify-content:space-between; padding:9px 15px; background:rgba(168,85,247,0.06); border-bottom:1px solid rgba(168,85,247,0.2); flex-shrink:0; }
-        .xray-info { display:flex; align-items:center; gap:8px; }
-        .xray-icon { font-size:1.1rem; }
-        .xray-text { font-family:'Orbitron',sans-serif; font-size:0.68rem; color:var(--purple); font-weight:700; letter-spacing:1px; }
-        .xray-desc { font-size:0.6rem; color:rgba(255,255,255,0.3); }
-        .toggle-wrap { display:flex; align-items:center; gap:8px; }
-        .toggle-lbl  { font-size:0.68rem; color:rgba(255,255,255,0.4); font-weight:700; }
-        .toggle { position:relative; width:46px; height:24px; background:#1a1a2e; border-radius:12px; border:1px solid rgba(168,85,247,0.3); cursor:pointer; transition:all 0.3s; }
-        .toggle.on { background:rgba(168,85,247,0.3); border-color:var(--purple); box-shadow:0 0 10px rgba(168,85,247,0.3); }
-        .toggle::after { content:''; position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#444; transition:all 0.3s; }
-        .toggle.on::after { transform:translateX(22px); background:var(--purple); box-shadow:0 0 6px var(--purple); }
-
-        /* MAIN */
-        .main { flex:1; overflow-y:auto; padding:14px 13px 30px; display:flex; flex-direction:column; gap:12px; }
-
-        /* PANEL */
-        .panel { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; }
-        .panel-title { font-family:'Orbitron',sans-serif; font-size:0.65rem; color:rgba(255,255,255,0.3); letter-spacing:2px; margin-bottom:11px; }
-
-        /* BET */
-        .quick-bets { display:flex; gap:5px; margin-bottom:9px; }
-        .qb { flex:1; padding:7px 2px; background:rgba(255,204,0,0.07); border:1px solid rgba(255,204,0,0.2); border-radius:7px; color:var(--gold); font-family:'Orbitron',sans-serif; font-size:0.6rem; font-weight:700; cursor:pointer; transition:all 0.15s; text-align:center; }
-        .qb:hover { background:rgba(255,204,0,0.18); transform:translateY(-1px); }
-        .bet-wrap { display:flex; align-items:center; gap:7px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,204,0,0.2); border-radius:9px; padding:9px 12px; }
-        .bet-lbl  { font-family:'Orbitron',sans-serif; font-size:0.6rem; color:var(--gold); font-weight:700; }
-        .bet-wrap input { flex:1; background:transparent; border:none; color:white; font-family:'Orbitron',sans-serif; font-size:0.88rem; font-weight:700; outline:none; }
-        .ozs-tag  { font-size:0.6rem; color:rgba(255,204,0,0.4); background:rgba(255,204,0,0.07); border-radius:5px; padding:2px 6px; }
-
-        /* MINES */
-        .mines-row { display:flex; gap:6px; margin-top:10px; }
-        .mine-opt { flex:1; padding:9px 2px; border-radius:9px; text-align:center; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); cursor:pointer; transition:all 0.15s; }
-        .mine-opt.active { border-color:var(--gold); background:rgba(255,204,0,0.09); }
-        .mine-opt .mo-v { font-family:'Orbitron',sans-serif; font-size:0.82rem; font-weight:900; }
-        .mine-opt .mo-l { font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:2px; font-weight:700; }
-        .mine-opt.active .mo-v { color:var(--gold); }
-        .mine-opt.active .mo-l { color:rgba(255,204,0,0.55); }
-
-        /* MULT PREVIEW */
-        .mult-prev { display:flex; justify-content:space-between; align-items:center; background:rgba(0,207,255,0.04); border:1px solid rgba(0,207,255,0.12); border-radius:9px; padding:9px 12px; margin-top:9px; }
-        .mp-lbl { font-size:0.65rem; color:rgba(255,255,255,0.35); font-weight:700; }
-        .mp-vals { display:flex; gap:12px; }
-        .mp-item { text-align:center; }
-        .mpv { font-family:'Orbitron',sans-serif; font-size:0.78rem; font-weight:700; color:var(--blue); }
-        .mpl { font-size:0.55rem; color:rgba(255,255,255,0.28); margin-top:2px; }
-
-        /* LIVE MULT */
-        .live-mult { display:none; flex-direction:column; align-items:center; background:linear-gradient(135deg,rgba(0,255,136,0.05),rgba(0,207,255,0.05)); border:1px solid rgba(0,255,136,0.18); border-radius:13px; padding:13px; }
-        .live-mult.on { display:flex; }
-        .lm-lbl { font-size:0.62rem; color:rgba(255,255,255,0.3); letter-spacing:2px; font-weight:700; }
-        .lm-val { font-family:'Orbitron',sans-serif; font-size:2.3rem; font-weight:900; color:var(--green); text-shadow:0 0 20px rgba(0,255,136,0.4); line-height:1; margin:4px 0; }
-        .lm-pot { font-size:0.72rem; color:rgba(0,255,136,0.55); font-weight:700; }
-
-        /* GRID */
-        .grid-wrap { position:relative; }
-        .grid { display:grid; grid-template-columns:repeat(5,1fr); gap:7px; }
-        .cell { aspect-ratio:1; border-radius:11px; display:flex; justify-content:center; align-items:center; font-size:1.4rem; cursor:pointer; transition:all 0.15s; background:linear-gradient(135deg,#151825,#0d0f18); border:1px solid rgba(255,255,255,0.08); position:relative; overflow:hidden; }
-        .cell::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.04),transparent); border-radius:11px; }
-        .cell:hover:not(.revealed-gem):not(.revealed-mine):not(.disabled):not(.xray-mine) { border-color:rgba(255,204,0,0.4); background:linear-gradient(135deg,#1e2235,#151825); transform:scale(1.05); box-shadow:0 0 12px rgba(255,204,0,0.15); }
-        .cell.xray-mine { background:linear-gradient(135deg,#1a0a0a,#200808) !important; border-color:rgba(255,59,59,0.4) !important; animation:xrayPulse 2s infinite; cursor:not-allowed; }
-        @keyframes xrayPulse { 0%,100%{box-shadow:0 0 5px rgba(255,59,59,0.2)} 50%{box-shadow:0 0 16px rgba(255,59,59,0.5)} }
-        .cell.xray-safe:hover:not(.revealed-gem) { border-color:rgba(0,255,136,0.5) !important; box-shadow:0 0 14px rgba(0,255,136,0.2) !important; background:linear-gradient(135deg,#0a2018,#0d2a1a) !important; transform:scale(1.05); }
-        .cell.revealed-gem  { background:linear-gradient(135deg,#0a2a18,#0d3520); border-color:rgba(0,255,136,0.4); animation:gemReveal 0.3s ease-out; cursor:default; }
-        .cell.revealed-mine { background:linear-gradient(135deg,#2a0a0a,#350d0d); border-color:rgba(255,59,59,0.6); animation:mineReveal 0.4s ease-out; cursor:default; }
-        .cell.show-mine     { background:linear-gradient(135deg,#1a0505,#200808); border-color:rgba(255,59,59,0.25); cursor:default; opacity:0.6; }
-        .cell.disabled { cursor:default; }
-        @keyframes gemReveal  { 0%{transform:scale(0.8);opacity:0.5} 60%{transform:scale(1.1)} 100%{transform:scale(1)} }
-        @keyframes mineReveal { 0%{transform:scale(0.8)} 30%{transform:scale(1.15) rotate(5deg)} 60%{transform:scale(0.95) rotate(-3deg)} 100%{transform:scale(1) rotate(0)} }
-
-        /* GRID OVERLAY */
-        .grid-overlay { position:absolute; inset:0; border-radius:14px; background:rgba(5,6,10,0.75); backdrop-filter:blur(3px); display:flex; flex-direction:column; justify-content:center; align-items:center; gap:6px; z-index:5; }
-        .ov-icon { font-size:2.5rem; opacity:0.4; }
-        .ov-txt  { font-family:'Orbitron',sans-serif; font-size:0.68rem; color:rgba(255,255,255,0.25); letter-spacing:2px; }
-
-        /* BUTTONS */
-        .btn { padding:13px; font-family:'Orbitron',sans-serif; font-size:0.8rem; font-weight:700; border:none; border-radius:11px; cursor:pointer; text-transform:uppercase; transition:all 0.2s; letter-spacing:1px; width:100%; }
-        .btn-start { background:linear-gradient(135deg,#1a6e2e,#25a244); color:white; box-shadow:0 4px 20px rgba(37,162,68,0.35); }
-        .btn-start:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 6px 25px rgba(37,162,68,0.5); }
-        .btn-cashout { background:linear-gradient(135deg,#a87800,#ffcc00); color:#000; display:none; animation:pulseCash 1s infinite alternate; }
-        @keyframes pulseCash { from{box-shadow:0 4px 15px rgba(255,204,0,0.3)} to{box-shadow:0 6px 30px rgba(255,204,0,0.7)} }
-        .btn:disabled { background:#111520; color:#333; box-shadow:none; cursor:not-allowed; animation:none; }
-
-        /* RESULT OVERLAY */
-        #result-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.88); backdrop-filter:blur(8px); z-index:100; display:none; flex-direction:column; justify-content:center; align-items:center; gap:10px; padding:30px; }
-        #result-overlay.show { display:flex; }
-        .result-box { width:100%; max-width:340px; border-radius:22px; padding:28px 22px; text-align:center; }
-        .result-box.win  { background:rgba(0,30,15,0.97); border:2px solid var(--green); box-shadow:0 0 40px rgba(0,255,136,0.2); }
-        .result-box.loss { background:rgba(30,0,0,0.97);  border:2px solid var(--red);   box-shadow:0 0 40px rgba(255,59,59,0.2); }
-        .r-icon   { font-size:3.5rem; margin-bottom:8px; animation:bounce 0.6s both; }
-        .r-title  { font-family:'Orbitron',sans-serif; font-size:1.3rem; font-weight:900; margin-bottom:5px; }
-        .r-title.win  { color:var(--green); text-shadow:0 0 20px rgba(0,255,136,0.5); }
-        .r-title.loss { color:var(--red);   text-shadow:0 0 20px rgba(255,59,59,0.5); }
-        .r-amount { font-family:'Orbitron',sans-serif; font-size:1.7rem; font-weight:900; margin:8px 0; }
-        .r-amount.win  { color:var(--gold); }
-        .r-amount.loss { color:rgba(255,59,59,0.7); }
-        .r-desc   { font-size:0.75rem; color:rgba(255,255,255,0.4); margin-bottom:18px; line-height:1.6; }
-        .r-tap-sync { background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.2); border-radius:10px; padding:10px; margin-bottom:14px; font-size:0.72rem; color:rgba(0,255,136,0.8); font-weight:700; }
-        .btn-again { width:100%; padding:13px; border:none; border-radius:11px; font-family:'Orbitron',sans-serif; font-size:0.82rem; font-weight:900; cursor:pointer; letter-spacing:1px; transition:all 0.2s; }
-        .btn-again.win  { background:linear-gradient(135deg,#1a6e2e,#25a244); color:white; }
-        .btn-again.loss { background:linear-gradient(135deg,#5a1010,var(--red)); color:white; }
-
-        /* HISTORY + STATS */
-        .history-strip { display:flex; gap:6px; overflow-x:auto; padding:2px 0; scrollbar-width:none; }
-        .history-strip::-webkit-scrollbar { display:none; }
-        .hs { flex-shrink:0; padding:4px 9px; border-radius:20px; font-family:'Orbitron',sans-serif; font-size:0.58rem; font-weight:700; }
-        .hs.w { background:rgba(0,255,136,0.1); color:var(--green); border:1px solid rgba(0,255,136,0.25); }
-        .hs.l { background:rgba(255,59,59,0.1); color:var(--red);   border:1px solid rgba(255,59,59,0.25); }
-        .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
-        .sc { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:9px; padding:11px 6px; text-align:center; }
-        .sv { font-family:'Orbitron',sans-serif; font-size:0.88rem; color:var(--gold); font-weight:700; }
-        .sl { font-size:0.58rem; color:rgba(255,255,255,0.28); margin-top:4px; font-weight:700; }
-
-        /* NOTIF */
-        .notif { position:fixed; top:18px; left:50%; transform:translateX(-50%) translateY(-120px); background:var(--card); border:1px solid var(--gold); padding:10px 18px; border-radius:18px; font-family:'Orbitron',sans-serif; font-size:0.72rem; font-weight:900; color:var(--gold); z-index:9999; transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1); box-shadow:0 0 20px rgba(255,204,0,0.25); white-space:nowrap; }
-        .notif.show { transform:translateX(-50%) translateY(0); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OZS Admin + Groq</title>
+<style>
+:root{--bg:#0a0a0f;--card:#171723;--line:rgba(255,215,0,.2);--gold:#ffd700;--text:#e8e8f0;--muted:#8b8ba7;--ok:#00e676;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Segoe UI,Arial,sans-serif;line-height:1.45}
+.wrap{max-width:920px;margin:0 auto;padding:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+h1,h2{margin:0 0 10px}
+h1{font-size:22px;color:var(--gold)}
+h2{font-size:17px}
+.muted{color:var(--muted);font-size:13px}
+label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+input,textarea,select{width:100%;background:#11111a;color:var(--text);border:1px solid #303046;border-radius:10px;padding:10px;font-size:14px}
+textarea{min-height:80px;resize:vertical}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+button{background:linear-gradient(135deg,#ffd700,#ff9800);border:none;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
+button.alt{background:#232337;color:var(--text);border:1px solid #3a3a55}
+ul.reg{list-style:none;padding:0;margin:8px 0 0;max-height:220px;overflow:auto}
+li.reg{border:1px solid #303046;border-radius:10px;padding:8px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between;gap:8px}
+.pill{display:inline-block;background:rgba(0,230,118,.13);border:1px solid rgba(0,230,118,.35);color:var(--ok);padding:4px 10px;border-radius:999px;font-size:11px;margin-top:6px}
+.groq-out{background:#0f0f14;border:1px solid #2a2a3d;border-radius:10px;padding:10px;margin-top:8px;min-height:48px;font-size:13px;color:#cdd}
+@media(max-width:720px){.grid{grid-template-columns:1fr}}
+.ch-row{display:flex;gap:14px;margin:12px 0;flex-wrap:wrap}
+.ch-row label{font-weight:600;display:flex;align-items:center;gap:6px;margin:0;cursor:pointer;color:var(--text)}
+</style>
 </head>
 <body>
+<div class="wrap">
+  <h1>OZS Admin panel</h1>
+  <div class="muted">Yangilik va topshiriqlar <strong>faqat bir xil brauzer/localStorage</strong> orqali o‘yin fayli bilan ishlaydi. Turli qurilmalar uchun keyin backend (Firebase va hokazo) qo‘shish kerak bo‘ladi.</div>
 
-<div id="intro">
-    <div class="intro-icon">💣</div>
-    <div class="intro-title">OZS MINES</div>
-    <div class="intro-sub">XRAY EDITION</div>
-    <div class="xray-badge">👁 X-RAY MODE</div>
-</div>
-
-<div class="notif" id="notif">+0 🪙</div>
-
-<div class="header">
-    <div class="logo">💣 OZS MINES</div>
-    <div class="bal-chip">
-        <span>🪙</span>
-        <div><div class="bv" id="bal">...</div><div class="bl">OZS COIN</div></div>
+  <div class="card">
+    <h2>🔑 Groq (admin uchun)</h2>
+    <p class="muted">Admin ham AI yordamida matn yozishi va rejani tekshirish mumkin. Kalit Console Groqdan olinadi.</p>
+    <input type="password" id="adminGroqKey" placeholder="gsk_... (faqat admin brauzerida)">
+    <label>Prompt</label>
+    <textarea id="adminGroqPrompt" placeholder="Masalan: yangi aksiya uchun 2 ta topshiriq matni yoz…"></textarea>
+    <div class="btns">
+      <button type="button" onclick="runAdminGroq()">Groq dan javob olish</button>
+      <button type="button" class="alt" onclick="persistAdminGroqKey()">Kalitni saqlash</button>
     </div>
-</div>
+    <div class="groq-out" id="adminGroqOut"></div>
+  </div>
 
-<!-- SYNC STATUS -->
-<div class="sync-bar">
-    <div class="sync-dot"></div>
-    <span class="sync-txt">OZS TAP bilan sinxron</span>
-    <span class="sync-val" id="sync-val">yuklanyapti...</span>
-</div>
+  <div class="card">
+    <h2>👥 Ro‘yxat (local)</h2>
+    <button type="button" class="alt" onclick="renderRegistry()">Yangilash</button>
+    <ul class="reg" id="registryList"></ul>
+  </div>
 
-<!-- XRAY TOGGLE -->
-<div class="xray-bar">
-    <div class="xray-info">
-        <span class="xray-icon">👁</span>
-        <div>
-            <div class="xray-text">X-RAY REJIM</div>
-            <div class="xray-desc">Minalar joyi ko'rinib turadi</div>
-        </div>
+  <div class="card">
+    <h2>📰 Yangilik</h2>
+    <label>Sarlavha</label>
+    <input id="newsTitle" placeholder="Masalan: Server texnik ishlar">
+    <label>Matn</label>
+    <textarea id="newsMsg" placeholder="Matn"></textarea>
+    <div class="grid">
+      <div><label>Ikonka</label><input id="newsIcon" value="📰"></div>
     </div>
-    <div class="toggle-wrap">
-        <span class="toggle-lbl" id="xray-status">OFF</span>
-        <div class="toggle" id="xray-toggle" onclick="toggleXray()"></div>
+    <button type="button" onclick="addNews()">Barchaga yuborish (bildirishnoma)</button>
+    <div class="muted" style="margin-top:8px">Vaqt yangilik yuborilgan paytdan avtomatik hisoblanadi.</div>
+    <ul style="list-style:none;padding-left:0" id="newsListAdmin"></ul>
+  </div>
+
+  <div class="card">
+    <h2>🎯 Yangi topshiriq</h2>
+    <label>Topshiriq nomi</label>
+    <input id="taskName" placeholder="Masalan: 5000 ta tap tering">
+    <div class="grid">
+      <div><label>Mukofot</label><input id="taskReward" type="number" min="1" value="1000"></div>
+      <div><label>Dugma</label>
+        <select id="taskAction"><option>Bajarish</option><option>Tasdiqlash</option></select>
+      </div>
     </div>
-</div>
-
-<div class="main">
-
-    <div class="panel" id="bet-panel">
-        <div class="panel-title">TIKISH SOZLAMALARI</div>
-        <div class="quick-bets">
-            <button class="qb" onclick="setQB(500)">500</button>
-            <button class="qb" onclick="setQB(1000)">1K</button>
-            <button class="qb" onclick="setQB(5000)">5K</button>
-            <button class="qb" onclick="setQB(10000)">10K</button>
-            <button class="qb" onclick="setQB(50000)">50K</button>
-        </div>
-        <div class="bet-wrap">
-            <span class="bet-lbl">TIK:</span>
-            <input type="number" id="bet-inp" value="1000" min="100" step="100">
-            <span class="ozs-tag">🪙 OZS</span>
-        </div>
-        <div style="margin-top:11px;">
-            <div class="panel-title">MINALAR SONI</div>
-            <div class="mines-row">
-                <div class="mine-opt active" onclick="selectMines(1,this)"><div class="mo-v">1 💣</div><div class="mo-l">Oson</div></div>
-                <div class="mine-opt" onclick="selectMines(3,this)"><div class="mo-v">3 💣</div><div class="mo-l">O'rta</div></div>
-                <div class="mine-opt" onclick="selectMines(5,this)"><div class="mo-v">5 💣</div><div class="mo-l">Qiyin</div></div>
-                <div class="mine-opt" onclick="selectMines(10,this)"><div class="mo-v">10 💣</div><div class="mo-l">Ekstr.</div></div>
-            </div>
-        </div>
-        <div class="mult-prev">
-            <span class="mp-lbl">MUKOFOT:</span>
-            <div class="mp-vals">
-                <div class="mp-item"><div class="mpv" id="mp1">—</div><div class="mpl">1-qadim</div></div>
-                <div class="mp-item"><div class="mpv" id="mp3">—</div><div class="mpl">3-qadim</div></div>
-                <div class="mp-item"><div class="mpv" id="mp5">—</div><div class="mpl">5-qadim</div></div>
-                <div class="mp-item"><div class="mpv" id="mp10">—</div><div class="mpl">10-qadim</div></div>
-            </div>
-        </div>
+    <div class="grid">
+      <div><label>Ikonka</label><input id="taskIcon" value="🆕"></div>
+      <div><label>O‘yin da ID (bo‘sh = avto)</label><input id="taskId" placeholder="masalan ozs_evt_1"></div>
     </div>
-
-    <div class="live-mult" id="live-mult">
-        <div class="lm-lbl">JORIY KOEFFITSIENT</div>
-        <div class="lm-val" id="lm-val">1.00x</div>
-        <div class="lm-pot" id="lm-pot">0 OZS Coin yutasiz</div>
+    <div class="ch-row">
+      <label><input type="radio" name="taskTarget" value="all" checked> Barcha o‘yinchilar</label>
+      <label><input type="radio" name="taskTarget" value="ids"> Tanlangan ID lar</label>
     </div>
-
-    <div class="grid-wrap">
-        <div class="grid" id="grid"></div>
-        <div class="grid-overlay" id="grid-overlay">
-            <div class="ov-icon">💎</div>
-            <div class="ov-txt">O'YINNI BOSHLANG</div>
-        </div>
+    <label>ID lar (vergul bilan, faqat ikkinchi variant)</label>
+    <input id="taskTargetIds" placeholder="OZabcd12,OZzy99">
+    <div class="muted" style="margin:10px 0">
+      <label><input type="checkbox" id="taskNoGroq" style="width:auto;display:inline;margin-right:6px">
+      Bu topshiriq uchun Groq tekshiruvisiz (faqat majburiy emas).</label><br>
+      Oddiy rejimda admin topshirig‘lari <strong>Groq orqali</strong> tasdiqlanishi kerak.
     </div>
+    <button type="button" onclick="addTaskTargeted()">Topshiriqni joylash</button>
+    <ul style="list-style:none;padding-left:0;margin-top:10px" id="taskOverview"></ul>
+  </div>
 
-    <button class="btn btn-start"   id="start-btn"  onclick="startGame()">🎯 O'YINNI BOSHLASH</button>
-    <button class="btn btn-cashout" id="cashout-btn" onclick="cashOut()">💰 YECHIB OLISH</button>
-
-    <div class="panel">
-        <div class="panel-title">OXIRGI O'YINLAR</div>
-        <div class="history-strip" id="hist-strip"><span style="font-size:0.7rem;color:rgba(255,255,255,0.2);">Hali o'yinlar yo'q...</span></div>
+  <div class="card">
+    <h2>📂 Eksport / import</h2>
+    <div class="btns">
+      <button type="button" class="alt" onclick="exportAll()">JSON eksport</button>
+      <button type="button" class="alt" onclick="importAll()">JSON import</button>
+      <button type="button" class="alt" onclick="clearNews()">Barcha yangiliklar</button>
+      <button type="button" class="alt" onclick="clearAllTasks()">Barcha topshiriqlar</button>
     </div>
-
-    <div class="panel">
-        <div class="panel-title">STATISTIKA</div>
-        <div class="stats-row">
-            <div class="sc"><div class="sv" id="st-g">0</div><div class="sl">O'YINLAR</div></div>
-            <div class="sc"><div class="sv" id="st-w">0</div><div class="sl">YUTUQLAR</div></div>
-            <div class="sc"><div class="sv" id="st-p">0</div><div class="sl">DAROMAD 🪙</div></div>
-        </div>
-    </div>
-</div>
-
-<!-- RESULT -->
-<div id="result-overlay">
-    <div class="result-box" id="result-box">
-        <div class="r-icon"   id="r-icon">🎉</div>
-        <div class="r-title"  id="r-title">YUTDINGIZ!</div>
-        <div class="r-amount" id="r-amount">+5,000 🪙</div>
-        <div class="r-desc"   id="r-desc"></div>
-        <div class="r-tap-sync" id="r-tap-sync" style="display:none">
-            ✅ OZS TAP balansiga qo'shildi!
-        </div>
-        <button class="btn-again" id="btn-again" onclick="closeResult()">🔄 QAYTA O'YNASH</button>
-    </div>
+    <div id="st" class="pill">Tayyor</div>
+  </div>
 </div>
 
 <script>
-const tg = window.Telegram?.WebApp || { expand:()=>{}, HapticFeedback:{impactOccurred:()=>{},notificationOccurred:()=>{}} };
-tg.expand();
+const NEWS_KEY='ozs_admin_news';
+const TASK_GLOBAL='ozs_admin_tasks_global';
+const TASK_DIRECT='ozs_admin_tasks_by_player';
+const TASK_LEGACY='ozs_admin_tasks';
+const REGISTRY='ozs_players_registry';
+const GROQ_STORE='ozs_admin_groq_key';
+const GROQ_URL='https://api.groq.com/openai/v1/chat/completions';
+const MODEL='llama-3.3-70b-versatile';
 
-// ================================================================
-// PERSISTENT STORAGE — OZS TAP bilan umumiy balans
-// window.storage API (Claude artifacts persistent storage)
-// ================================================================
-const STORAGE_KEY = "ozs_coins";   // OZS TAP ham shu kalitni ishlatishi kerak
-const MINES_KEY   = "ozs_mines_data";
+function read(k,f){try{const x=localStorage.getItem(k);return x?JSON.parse(x):f;}catch(e){return f;}}
+function write(k,v){localStorage.setItem(k,JSON.stringify(v));}
+function setSt(t){document.getElementById('st').textContent=t;}
+function persistAdminGroqKey(){
+  const v=document.getElementById('adminGroqKey').value.trim();
+  if(v.length>8){localStorage.setItem(GROQ_STORE,v);setSt('Admin Groq kalit saqlandi');}
+}
+function groqKey(){return(document.getElementById('adminGroqKey').value.trim()||localStorage.getItem(GROQ_STORE)||'').trim();}
 
-let cachedCoins = 0;
+function ensureLegacyTasks(){let g=read(TASK_GLOBAL,null);if(Array.isArray(g))return g;const o=read(TASK_LEGACY,[]);if(o.length){write(TASK_GLOBAL,o);return o;}return[];}
 
-async function loadCoins() {
-    try {
-        const res = await window.storage.get(STORAGE_KEY, true); // shared=true
-        cachedCoins = res ? Number(res.value) || 0 : 0;
-    } catch {
-        // Agar storage yo'q bo'lsa, localStorage fallback
-        cachedCoins = Number(localStorage.getItem("ozs_f_coins")) || 0;
-    }
-    updateBalUI();
+window.addEventListener('DOMContentLoaded',()=>{
+  const k=localStorage.getItem(GROQ_STORE);
+  if(k)document.getElementById('adminGroqKey').value=k;
+  renderLists();
+  renderRegistry();
+});
+
+function formatTs(ts){const ms=Date.now()-ts,s=Math.floor(ms/1000);if(s<60)return'Shunchaki hozir';if(s<3600)return Math.floor(s/60)+' daqiqa oldin';if(s<86400)return Math.floor(s/3600)+' soat oldin';return Math.floor(s/86400)+' kun oldin';}
+
+async function runAdminGroq(){
+  document.getElementById('adminGroqOut').textContent='So‘rov yuborilmoqda...';
+  const key=groqKey();
+  const prompt=(document.getElementById('adminGroqPrompt').value||'').trim();
+  if(!key)return void(document.getElementById('adminGroqOut').textContent='Avval Groq kalit kiriting.');
+  if(!prompt)return void(document.getElementById('adminGroqOut').textContent='Prompt yozing.');
+  try{
+    const r=await fetch(GROQ_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:MODEL,messages:[{role:'system',content:'Administrator yordamchisi — qisqa, aniq Uzbek/Russian javob beradi.'},{role:'user',content:prompt}],temperature:.35,max_tokens:900})});
+    const j=await r.json();if(!r.ok)throw new Error(JSON.stringify(j));
+    document.getElementById('adminGroqOut').textContent=j.choices[0].message.content||'(bo‘sh)';
+  }catch(e){
+    document.getElementById('adminGroqOut').textContent='Xato — CORS yoki kalit. Brauzerdan Groq API ba‘zan bloklanadi; kichik server/proxy zarur.';
+  }
 }
 
-async function saveCoins(val) {
-    const safe = Math.max(0, Math.floor(val));
-    cachedCoins = safe;
-    try {
-        await window.storage.set(STORAGE_KEY, String(safe), true); // shared=true
-        // localStorage ga ham yozamiz (OZS TAP localStorage ishlatsa)
-        localStorage.setItem("ozs_f_coins", safe);
-        const total = Number(localStorage.getItem("ozs_f_totalCoins")||0);
-        if (safe > total) localStorage.setItem("ozs_f_totalCoins", safe);
-    } catch {
-        localStorage.setItem("ozs_f_coins", safe);
-    }
-    updateBalUI();
+function renderRegistry(){
+  const list=document.getElementById('registryList');
+  list.innerHTML='';
+  const reg=Array.isArray(read(REGISTRY,[]))?read(REGISTRY,[]):[];
+  reg.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  if(!reg.length){list.innerHTML='<li style="opacity:.6;border:none;padding:12px;text-align:center">Hali qurilmadan o‘yin o‘yinilmagan (local).</li>';return;}
+  reg.slice(0,60).forEach(p=>{
+    const li=document.createElement('li');li.className='reg';
+    const wrap=document.createElement('div');wrap.innerHTML='<strong>'+escapeHtml(p.playerId||'')+'</strong><div class="muted">Balans: '+(fmtN(p.balance))+' • Liga idx: '+String(p.leagueIdx??'?')+'</div>';
+    const b=document.createElement('button');b.type='button';b.className='alt';b.textContent='ID';b.onclick=()=>injectId(p.playerId);
+    li.appendChild(wrap);li.appendChild(b);
+    list.appendChild(li);
+  });
+}
+function fmtN(n){n=Math.floor(Number(n)||0);if(n>=1e6)return(n/1e6).toFixed(2)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return String(n);}
+function injectId(pid){document.getElementById('taskTargetIds').value=pid;(document.querySelector('input[name=taskTarget][value=ids]')).checked=true;setSt('ID yozildi')}
+function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function addNews(){
+  const title=document.getElementById('newsTitle').value.trim();
+  const msg=document.getElementById('newsMsg').value.trim();
+  if(!title||!msg)return setSt('Sarlavha va matn');
+  const n={id:'news_'+Date.now(),title,msg,icon:(document.getElementById('newsIcon').value||'📰').trim(),ts:Date.now()};
+  const arr=[n].concat(read(NEWS_KEY,[]));
+  write(NEWS_KEY,arr);
+  document.getElementById('newsTitle').value='';document.getElementById('newsMsg').value='';
+  setSt('Yangilik yuborildi');
+  renderLists();
 }
 
-async function loadMinesData() {
-    try {
-        const res = await window.storage.get(MINES_KEY);
-        if (res) D = JSON.parse(res.value);
-    } catch {
-        const local = localStorage.getItem("ozs_mines2");
-        if (local) D = JSON.parse(local);
-    }
+function renderLists(){
+  const news=read(NEWS_KEY,[]);
+  const na=document.getElementById('newsListAdmin');
+  na.innerHTML='';
+  news.forEach(n=>{
+    const nid=n.id||'';
+    const li=document.createElement('li');li.style.cssText='display:flex;justify-content:space-between;gap:8px;margin:8px 0;font-size:12px';
+    const ts=typeof n.ts==='number'?n.ts:Date.now();
+    li.innerHTML='<span>'+(n.icon||'📰')+' <strong>'+escapeHtml(n.title)+'</strong> — '+formatTs(ts)+'</span>';
+    const b=document.createElement('button');b.type='button';b.className='alt';b.textContent='O‘chirish';b.onclick=()=>{write(NEWS_KEY,read(NEWS_KEY,[]).filter(x=>(x.id||'')!==nid));renderLists();};
+    li.appendChild(b);na.appendChild(li);
+  });
+
+  const g=ensureLegacyTasks();
+  const d=read(TASK_DIRECT,{});
+  document.getElementById('taskOverview').innerHTML='';
+  const hdr=document.createElement('div');hdr.className='muted';hdr.textContent='Global: '+g.length+' ta • ID lar: '+Object.keys(d).length;
+  document.getElementById('taskOverview').appendChild(hdr);
 }
 
-async function saveMinesData() {
-    try {
-        await window.storage.set(MINES_KEY, JSON.stringify(D));
-    } catch {}
-    localStorage.setItem("ozs_mines2", JSON.stringify(D));
-}
+function clearNews(){write(NEWS_KEY,[]);setSt('Tozalandi');renderLists();}
+function clearAllTasks(){write(TASK_GLOBAL,[]);write(TASK_DIRECT,{});try{localStorage.removeItem(TASK_LEGACY);}catch(e){};setSt('Topshiqlar tozalandi');renderLists();}
 
-function updateBalUI() {
-    document.getElementById("bal").textContent      = cachedCoins.toLocaleString("ru-RU");
-    document.getElementById("sync-val").textContent = cachedCoins.toLocaleString("ru-RU") + " 🪙";
-}
+function addTaskTargeted(){
+  const name=document.getElementById('taskName').value.trim();
+  const reward=Math.max(0,Number(document.getElementById('taskReward').value||0));
+  if(!name||reward<1)return void setSt('Nom va mukofot');
+  let id=document.getElementById('taskId').value.trim()||('ad_'+Date.now());
+  const groq=document.getElementById('taskNoGroq').checked?false:true;
+  const payload={id,icon:(document.getElementById('taskIcon').value||'🆕').trim(),name,reward,action:document.getElementById('taskAction').value||'Bajarish',groqVerify:groq,ts:Date.now()};
+  const mode=document.querySelector('input[name=taskTarget]:checked').value;
 
-// ================================================================
-// GAME STATE
-// ================================================================
-const TOTAL = 25;
-let mineCount = 1, mineCells = [], revealedCells = [];
-let gemsFound = 0, bet = 0, active = false, mult = 1.0;
-let xrayOn = false;
+  const g=[].concat(read(TASK_GLOBAL,[]));
+  const d=Object.assign({},read(TASK_DIRECT,{}));
 
-let D = { hist:[], s:{games:0, wins:0, profit:0}, xray:false };
-
-// ================================================================
-// INIT
-// ================================================================
-async function init() {
-    await loadCoins();
-    await loadMinesData();
-    xrayOn = D.xray || false;
-    if (xrayOn) {
-        document.getElementById("xray-toggle").classList.add("on");
-        document.getElementById("xray-status").textContent = "ON";
-        document.getElementById("xray-status").style.color = "var(--purple)";
-    }
-    buildGrid(); updateMultPreview(); renderHist(); updateStats();
-}
-init();
-
-// Har 3 soniyada OZS TAP balansini ham tekshir
-setInterval(loadCoins, 3000);
-
-// ================================================================
-// NOTIF
-// ================================================================
-function pop(txt, clr) {
-    const n = document.getElementById("notif");
-    n.textContent=txt; n.style.borderColor=clr||"var(--gold)"; n.style.color=clr||"var(--gold)";
-    n.classList.add("show"); setTimeout(()=>n.classList.remove("show"),2500);
-}
-
-// ================================================================
-// X-RAY
-// ================================================================
-function toggleXray() {
-    xrayOn = !xrayOn; D.xray = xrayOn; saveMinesData();
-    const tgl = document.getElementById("xray-toggle");
-    const lbl = document.getElementById("xray-status");
-    tgl.classList.toggle("on", xrayOn);
-    lbl.textContent = xrayOn ? "ON" : "OFF";
-    lbl.style.color = xrayOn ? "var(--purple)" : "";
-    pop(xrayOn ? "👁 X-Ray yoqildi! Minalar ko'rinadi!" : "👁 X-Ray o'chirildi",
-        xrayOn ? "var(--purple)" : "rgba(255,255,255,0.5)");
-    if (active) applyXray();
-}
-
-function applyXray() {
-    for (let i=0; i<TOTAL; i++) {
-        const c = document.getElementById("c-"+i);
-        if (!c || revealedCells[i]) continue;
-        if (xrayOn && mineCells.includes(i)) {
-            c.classList.add("xray-mine"); c.classList.remove("xray-safe");
-            c.textContent = "💣"; c.onclick = null;
-        } else if (xrayOn) {
-            c.classList.remove("xray-mine"); c.classList.add("xray-safe");
-            c.textContent = "💎"; c.onclick = () => tap(i);
-        } else {
-            c.classList.remove("xray-mine","xray-safe");
-            c.textContent = "❓"; c.onclick = () => tap(i);
-        }
-    }
-}
-
-// ================================================================
-// MINES SELECTOR & MULT
-// ================================================================
-function selectMines(n, el) {
-    if (active) return;
-    mineCount = n;
-    document.querySelectorAll(".mine-opt").forEach(e=>e.classList.remove("active"));
-    el.classList.add("active"); updateMultPreview();
-}
-
-function calcMult(mines, step) {
-    let m = 1.0;
-    for (let i=0; i<step; i++) m *= (TOTAL-i)/(TOTAL-mines-i);
-    return Math.max(1.0, m * 0.90);
-}
-
-function updateMultPreview() {
-    document.getElementById("mp1").textContent  = calcMult(mineCount,1).toFixed(2)+"x";
-    document.getElementById("mp3").textContent  = calcMult(mineCount,3).toFixed(2)+"x";
-    document.getElementById("mp5").textContent  = calcMult(mineCount,5).toFixed(2)+"x";
-    document.getElementById("mp10").textContent = calcMult(mineCount,10).toFixed(2)+"x";
-}
-
-// ================================================================
-// GRID
-// ================================================================
-function buildGrid() {
-    const g = document.getElementById("grid"); g.innerHTML="";
-    for (let i=0; i<TOTAL; i++) {
-        const c = document.createElement("div");
-        c.className="cell disabled"; c.id="c-"+i; c.textContent="❓";
-        g.appendChild(c);
-    }
-}
-
-function setQB(v) { if(!active) document.getElementById("bet-inp").value=v; }
-
-// ================================================================
-// START GAME
-// ================================================================
-async function startGame() {
-    const b = parseFloat(document.getElementById("bet-inp").value);
-    await loadCoins();
-    if (!b||b<100)         { pop("⚠️ Minimal: 100 OZS Coin","var(--red)"); return; }
-    if (b > cachedCoins)   { pop("⚠️ OZS Coin yetarli emas!","var(--red)"); return; }
-
-    await saveCoins(cachedCoins - b);
-    bet=b; gemsFound=0; mult=1.0; active=true;
-    revealedCells = new Array(TOTAL).fill(false);
-
-    // Minalarni tasodifiy joylashtir
-    const pool = Array.from({length:TOTAL},(_,i)=>i);
-    for (let i=pool.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
-    mineCells = pool.slice(0,mineCount);
-
-    buildGrid();
-    for (let i=0;i<TOTAL;i++) {
-        const c=document.getElementById("c-"+i);
-        c.classList.remove("disabled");
-        c.textContent="❓"; c.onclick=()=>tap(i);
-    }
-    if (xrayOn) applyXray();
-
-    document.getElementById("grid-overlay").style.display="none";
-    document.getElementById("start-btn").style.display="none";
-    document.getElementById("cashout-btn").style.display="block";
-    document.getElementById("cashout-btn").disabled=true;
-    document.getElementById("bet-panel").style.opacity="0.5";
-    document.getElementById("bet-panel").style.pointerEvents="none";
-    document.getElementById("live-mult").classList.add("on");
-    updateLiveMult();
-
-    D.s.games++; await saveMinesData(); updateStats();
-    if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
-}
-
-// ================================================================
-// TAP
-// ================================================================
-function tap(idx) {
-    if (!active||revealedCells[idx]) return;
-    if (xrayOn && mineCells.includes(idx)) return;
-    revealedCells[idx]=true;
-    const c=document.getElementById("c-"+idx);
-    c.onclick=null; c.classList.remove("xray-mine","xray-safe");
-
-    if (mineCells.includes(idx)) {
-        c.classList.add("revealed-mine"); c.textContent="💥";
-        if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
-        setTimeout(()=>revealAll(idx),250);
-        setTimeout(()=>endGame(),700);
-    } else {
-        c.classList.add("revealed-gem"); c.textContent="💎";
-        gemsFound++; mult=calcMult(mineCount,gemsFound);
-        updateLiveMult();
-        document.getElementById("cashout-btn").disabled=false;
-        if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
-        if (gemsFound >= TOTAL-mineCount) setTimeout(()=>cashOut(),300);
-    }
-}
-
-function revealAll(triggerIdx) {
-    mineCells.forEach(idx=>{
-        if (idx===triggerIdx) return;
-        const c=document.getElementById("c-"+idx);
-        c.classList.add("show-mine"); c.textContent="💣"; c.onclick=null;
+  if(mode==='all'){
+    g.unshift(payload);
+    write(TASK_GLOBAL,g);
+  }else{
+    const ids=(document.getElementById('taskTargetIds').value||'').split(/[,，\s]+/).map(x=>x.trim()).filter(Boolean);
+    if(!ids.length)return void setSt('ID kiriting');
+    ids.forEach(pid=>{
+      const t={...payload,id:id+'_'+String(pid).replace(/[^a-zA-Z0-9]/g,''),ts:Date.now()};
+      if(!d[pid])d[pid]=[];
+      d[pid]=[t].concat(d[pid]);
     });
+    write(TASK_DIRECT,d);
+  }
+  ensureLegacyTasks();
+  setSt(mode==='all'?'Barchaga joylandi':'ID larga jo‘natildi');
+  document.getElementById('taskName').value='';
+  renderLists();renderRegistry();
 }
 
-// ================================================================
-// CASH OUT — OZS TAP ga ham yoziladi!
-// ================================================================
-async function cashOut() {
-    if (!active||gemsFound===0) return;
-    active=false;
-    const win    = Math.floor(bet*mult);
-    const profit = win-bet;
-
-    // ✅ Shared storage orqali OZS TAP ga ham yoziladi
-    await saveCoins(cachedCoins + win);
-
-    D.s.wins++; D.s.profit+=profit;
-    D.hist.unshift({w:true, mult, bet, profit});
-    if (D.hist.length>20) D.hist.pop();
-    await saveMinesData(); updateStats(); renderHist();
-    showResult(true, win, profit);
-    if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+function exportAll(){
+  const blob=new Blob([JSON.stringify({
+    news:read(NEWS_KEY,[]),
+    tasks_global:read(TASK_GLOBAL,[]),
+    tasks_by_player:read(TASK_DIRECT,{}),
+  },null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download='ozs-admin-bundle.json';a.click();URL.revokeObjectURL(a.href);setSt('Eksport');
 }
-
-async function endGame() {
-    active=false;
-    D.hist.unshift({w:false, mult, bet, profit:-bet});
-    if (D.hist.length>20) D.hist.pop();
-    await saveMinesData(); updateStats(); renderHist();
-    showResult(false, 0, -bet);
-}
-
-// ================================================================
-// SHOW RESULT
-// ================================================================
-function showResult(won, winAmt, profit) {
-    const ov=document.getElementById("result-overlay");
-    const bx=document.getElementById("result-box");
-    ov.classList.add("show");
-    bx.className="result-box "+(won?"win":"loss");
-    document.getElementById("r-icon").textContent  = won?"🎉":"💥";
-    document.getElementById("r-title").className   = "r-title "+(won?"win":"loss");
-    document.getElementById("r-title").textContent = won?"YUTDINGIZ!":"PORTLADI!";
-    document.getElementById("r-amount").className  = "r-amount "+(won?"win":"loss");
-    document.getElementById("r-amount").textContent= won
-        ? "+"+winAmt.toLocaleString()+" 🪙"
-        : "-"+bet.toLocaleString()+" 🪙";
-    document.getElementById("r-desc").innerHTML = won
-        ? `${gemsFound} ta javohir • <b>${mult.toFixed(2)}x</b> koeffitsient`
-        : `Mina topildingiz!${gemsFound>0?" "+gemsFound+" ta javohir ochgandingiz":""}`;
-
-    const syncEl = document.getElementById("r-tap-sync");
-    syncEl.style.display = won ? "block" : "none";
-    if (won) syncEl.textContent = "✅ OZS TAP balansiga +"+winAmt.toLocaleString()+" 🪙 qo'shildi!";
-
-    document.getElementById("btn-again").className = "btn-again "+(won?"win":"loss");
-}
-
-function closeResult() {
-    document.getElementById("result-overlay").classList.remove("show");
-    active=false; buildGrid();
-    document.getElementById("grid-overlay").style.display="";
-    document.getElementById("start-btn").style.display="block";
-    document.getElementById("cashout-btn").style.display="none";
-    document.getElementById("bet-panel").style.opacity="1";
-    document.getElementById("bet-panel").style.pointerEvents="auto";
-    document.getElementById("live-mult").classList.remove("on");
-}
-
-function updateLiveMult() {
-    document.getElementById("lm-val").textContent = mult.toFixed(2)+"x";
-    document.getElementById("lm-pot").textContent = Math.floor(bet*mult).toLocaleString()+" OZS Coin yutasiz";
-}
-
-function renderHist() {
-    const s=document.getElementById("hist-strip");
-    if (!D.hist.length) { s.innerHTML='<span style="font-size:0.7rem;color:rgba(255,255,255,0.2);">Hali o\'yinlar yo\'q...</span>'; return; }
-    s.innerHTML="";
-    D.hist.slice(0,12).forEach(h=>{
-        const d=document.createElement("div");
-        d.className="hs "+(h.w?"w":"l");
-        d.textContent=h.w?"+"+Math.abs(h.profit).toLocaleString():"-"+Math.abs(h.bet).toLocaleString();
-        s.appendChild(d);
-    });
-}
-
-function updateStats() {
-    document.getElementById("st-g").textContent=D.s.games;
-    document.getElementById("st-w").textContent=D.s.wins;
-    document.getElementById("st-p").textContent=(D.s.profit>=0?"+":"")+D.s.profit.toLocaleString();
+function importAll(){
+  const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=()=>{
+    const f=i.files&&i.files[0];if(!f)return;
+    f.text().then(txt=>{
+      const p=JSON.parse(txt);
+      if(Array.isArray(p.news))write(NEWS_KEY,p.news);
+      if(Array.isArray(p.tasks_global))write(TASK_GLOBAL,p.tasks_global);
+      if(typeof p.tasks_by_player==='object')write(TASK_DIRECT,p.tasks_by_player);
+      renderLists();setSt('Import OK');
+    }).catch(()=>setSt('Xato'));
+  };i.click();
 }
 </script>
 </body>
 </html>
+
