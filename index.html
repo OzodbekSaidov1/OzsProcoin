@@ -2,264 +2,535 @@
 <html lang="uz">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OZS Admin + Groq</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OZS Admin Panel</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
-:root{--bg:#0a0a0f;--card:#171723;--line:rgba(255,215,0,.2);--gold:#ffd700;--text:#e8e8f0;--muted:#8b8ba7;--ok:#00e676;}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Segoe UI,Arial,sans-serif;line-height:1.45}
-.wrap{max-width:920px;margin:0 auto;padding:20px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
-h1,h2{margin:0 0 10px}
-h1{font-size:22px;color:var(--gold)}
-h2{font-size:17px}
-.muted{color:var(--muted);font-size:13px}
-label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
-input,textarea,select{width:100%;background:#11111a;color:var(--text);border:1px solid #303046;border-radius:10px;padding:10px;font-size:14px}
-textarea{min-height:80px;resize:vertical}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-button{background:linear-gradient(135deg,#ffd700,#ff9800);border:none;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
-button.alt{background:#232337;color:var(--text);border:1px solid #3a3a55}
-ul.reg{list-style:none;padding:0;margin:8px 0 0;max-height:220px;overflow:auto}
-li.reg{border:1px solid #303046;border-radius:10px;padding:8px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between;gap:8px}
-.pill{display:inline-block;background:rgba(0,230,118,.13);border:1px solid rgba(0,230,118,.35);color:var(--ok);padding:4px 10px;border-radius:999px;font-size:11px;margin-top:6px}
-.groq-out{background:#0f0f14;border:1px solid #2a2a3d;border-radius:10px;padding:10px;margin-top:8px;min-height:48px;font-size:13px;color:#cdd}
-@media(max-width:720px){.grid{grid-template-columns:1fr}}
-.ch-row{display:flex;gap:14px;margin:12px 0;flex-wrap:wrap}
-.ch-row label{font-weight:600;display:flex;align-items:center;gap:6px;margin:0;cursor:pointer;color:var(--text)}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d1a;--card:#141428;--card2:#1a1a30;
+  --border:#2a2a4a;--text:#e8e8ff;--muted:#7878aa;
+  --gold:#FFD700;--green:#00E676;--red:#FF6B6B;--blue:#00B4D8;
+  --purple:#a855f7;
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;}
+/* LOGIN */
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px 28px;max-width:360px;width:100%;text-align:center;}
+.login-logo{font-size:48px;margin-bottom:8px;}
+.login-title{font-size:22px;font-weight:700;color:var(--gold);margin-bottom:6px;}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:28px;}
+.inp{width:100%;padding:12px 14px;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;margin-bottom:10px;outline:none;}
+.inp:focus{border-color:var(--gold);}
+.btn-gold{width:100%;padding:13px;background:linear-gradient(135deg,#b8860b,var(--gold));border:none;border-radius:10px;color:#000;font-size:15px;font-weight:700;cursor:pointer;}
+.btn-gold:hover{opacity:.9;}
+.login-err{color:var(--red);font-size:12px;margin-top:8px;display:none;}
+/* APP */
+#app{display:none;min-height:100vh;}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;}
+.tb-title{font-size:17px;font-weight:700;color:var(--gold);}
+.tb-user{font-size:12px;color:var(--muted);}
+.btn-logout{background:none;border:1px solid var(--border);border-radius:8px;padding:5px 12px;color:var(--muted);font-size:12px;cursor:pointer;}
+.btn-logout:hover{border-color:var(--red);color:var(--red);}
+.layout{display:flex;min-height:calc(100vh - 53px);}
+/* SIDEBAR */
+.sidebar{width:200px;background:var(--card);border-right:1px solid var(--border);padding:16px 0;flex-shrink:0;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 18px;font-size:13px;cursor:pointer;color:var(--muted);border-left:3px solid transparent;transition:.2s;}
+.nav-item:hover{background:var(--card2);color:var(--text);}
+.nav-item.active{background:var(--card2);color:var(--gold);border-left-color:var(--gold);}
+.nav-icon{font-size:16px;width:20px;text-align:center;}
+/* MAIN */
+.main{flex:1;padding:20px;overflow-y:auto;}
+.page-section{display:none;}
+.page-section.active{display:block;}
+.sec-title{font-size:18px;font-weight:700;margin-bottom:16px;color:var(--text);}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px;}
+.card-title{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.form-row-1{margin-bottom:10px;}
+label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;}
+input,textarea,select{width:100%;padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:13px;outline:none;font-family:inherit;}
+input:focus,textarea:focus,select:focus{border-color:var(--gold);}
+textarea{resize:vertical;min-height:70px;}
+.btn{padding:10px 18px;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-primary{background:var(--gold);color:#000;}
+.btn-primary:hover{opacity:.9;}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.btn-green{background:var(--green);color:#000;}
+.toast-box{position:fixed;bottom:20px;right:20px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 18px;font-size:13px;display:none;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.5);}
+.toast-box.show{display:block;}
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px;}
+.stat-c{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
+.stat-v{font-size:24px;font-weight:700;color:var(--gold);}
+.stat-l{font-size:11px;color:var(--muted);margin-top:4px;}
+/* TABLE */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{text-align:left;padding:10px 12px;background:var(--card2);color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);}
+td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.02);}
+/* TASKS LIST */
+.task-item{display:flex;align-items:center;justify-content:space-between;background:var(--card2);border-radius:10px;padding:10px 14px;margin-bottom:8px;}
+.task-info{flex:1;}
+.task-name{font-size:13px;font-weight:600;}
+.task-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+/* NEWS LIST */
+.news-item{display:flex;align-items:flex-start;justify-content:space-between;background:var(--card2);border-radius:10px;padding:10px 14px;margin-bottom:8px;gap:10px;}
+.news-body{flex:1;}
+.news-title{font-size:13px;font-weight:600;}
+.news-msg{font-size:11px;color:var(--muted);margin-top:2px;}
+@media(max-width:600px){
+  .sidebar{display:none;}
+  .form-row{grid-template-columns:1fr;}
+}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>OZS Admin panel</h1>
-  <div class="muted">Yangilik va topshiriqlar <strong>faqat bir xil brauzer/localStorage</strong> orqali o‘yin fayli bilan ishlaydi. Turli qurilmalar uchun keyin backend (Firebase va hokazo) qo‘shish kerak bo‘ladi.</div>
 
-  <div class="card">
-    <h2>🔑 Groq (admin uchun)</h2>
-    <p class="muted">Admin ham AI yordamida matn yozishi va rejani tekshirish mumkin. Kalit Console Groqdan olinadi.</p>
-    <input type="password" id="adminGroqKey" placeholder="gsk_... (faqat admin brauzerida)">
-    <label>Prompt</label>
-    <textarea id="adminGroqPrompt" placeholder="Masalan: yangi aksiya uchun 2 ta topshiriq matni yoz…"></textarea>
-    <div class="btns">
-      <button type="button" onclick="runAdminGroq()">Groq dan javob olish</button>
-      <button type="button" class="alt" onclick="persistAdminGroqKey()">Kalitni saqlash</button>
-    </div>
-    <div class="groq-out" id="adminGroqOut"></div>
-  </div>
-
-  <div class="card">
-    <h2>👥 Ro‘yxat (local)</h2>
-    <button type="button" class="alt" onclick="renderRegistry()">Yangilash</button>
-    <ul class="reg" id="registryList"></ul>
-  </div>
-
-  <div class="card">
-    <h2>📰 Yangilik</h2>
-    <label>Sarlavha</label>
-    <input id="newsTitle" placeholder="Masalan: Server texnik ishlar">
-    <label>Matn</label>
-    <textarea id="newsMsg" placeholder="Matn"></textarea>
-    <div class="grid">
-      <div><label>Ikonka</label><input id="newsIcon" value="📰"></div>
-    </div>
-    <button type="button" onclick="addNews()">Barchaga yuborish (bildirishnoma)</button>
-    <div class="muted" style="margin-top:8px">Vaqt yangilik yuborilgan paytdan avtomatik hisoblanadi.</div>
-    <ul style="list-style:none;padding-left:0" id="newsListAdmin"></ul>
-  </div>
-
-  <div class="card">
-    <h2>🎯 Yangi topshiriq</h2>
-    <label>Topshiriq nomi</label>
-    <input id="taskName" placeholder="Masalan: 5000 ta tap tering">
-    <div class="grid">
-      <div><label>Mukofot</label><input id="taskReward" type="number" min="1" value="1000"></div>
-      <div><label>Dugma</label>
-        <select id="taskAction"><option>Bajarish</option><option>Tasdiqlash</option></select>
-      </div>
-    </div>
-    <div class="grid">
-      <div><label>Ikonka</label><input id="taskIcon" value="🆕"></div>
-      <div><label>O‘yin da ID (bo‘sh = avto)</label><input id="taskId" placeholder="masalan ozs_evt_1"></div>
-    </div>
-    <div class="ch-row">
-      <label><input type="radio" name="taskTarget" value="all" checked> Barcha o‘yinchilar</label>
-      <label><input type="radio" name="taskTarget" value="ids"> Tanlangan ID lar</label>
-    </div>
-    <label>ID lar (vergul bilan, faqat ikkinchi variant)</label>
-    <input id="taskTargetIds" placeholder="OZabcd12,OZzy99">
-    <div class="muted" style="margin:10px 0">
-      <label><input type="checkbox" id="taskNoGroq" style="width:auto;display:inline;margin-right:6px">
-      Bu topshiriq uchun Groq tekshiruvisiz (faqat majburiy emas).</label><br>
-      Oddiy rejimda admin topshirig‘lari <strong>Groq orqali</strong> tasdiqlanishi kerak.
-    </div>
-    <button type="button" onclick="addTaskTargeted()">Topshiriqni joylash</button>
-    <ul style="list-style:none;padding-left:0;margin-top:10px" id="taskOverview"></ul>
-  </div>
-
-  <div class="card">
-    <h2>📂 Eksport / import</h2>
-    <div class="btns">
-      <button type="button" class="alt" onclick="exportAll()">JSON eksport</button>
-      <button type="button" class="alt" onclick="importAll()">JSON import</button>
-      <button type="button" class="alt" onclick="clearNews()">Barcha yangiliklar</button>
-      <button type="button" class="alt" onclick="clearAllTasks()">Barcha topshiriqlar</button>
-    </div>
-    <div id="st" class="pill">Tayyor</div>
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">🛡️</div>
+    <div class="login-title">OZS Admin Panel</div>
+    <div class="login-sub">Faqat admin uchun kirish</div>
+    <div class="form-row-1"><label>Email</label><input type="email" id="loginEmail" placeholder="admin@ozscoin.com" autocomplete="email"></div>
+    <div class="form-row-1"><label>Parol</label><input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"></div>
+    <button class="btn-gold" onclick="doLogin()">🔐 Kirish</button>
+    <div class="login-err" id="loginErr"></div>
+    <div style="margin-top:16px;font-size:11px;color:var(--muted)">Firebase Auth → Email/Password bilan kiring</div>
   </div>
 </div>
 
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="tb-title">🎮 OZS Admin Panel</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="tb-user" id="adminEmail"></div>
+      <button class="btn-logout" onclick="doLogout()">Chiqish</button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="nav-item active" data-page="dashboard" onclick="goPage('dashboard')"><div class="nav-icon">📊</div>Dashboard</div>
+      <div class="nav-item" data-page="players" onclick="goPage('players')"><div class="nav-icon">👥</div>O'yinchilar</div>
+      <div class="nav-item" data-page="coins" onclick="goPage('coins')"><div class="nav-icon">🪙</div>Coin berish</div>
+      <div class="nav-item" data-page="news" onclick="goPage('news')"><div class="nav-icon">📢</div>Yangiliklar</div>
+      <div class="nav-item" data-page="tasks" onclick="goPage('tasks')"><div class="nav-icon">🎯</div>Topshiriqlar</div>
+    </div>
+    <div class="main">
+
+      <!-- DASHBOARD -->
+      <div class="page-section active" id="pg-dashboard">
+        <div class="sec-title">📊 Dashboard</div>
+        <div class="stats-grid">
+          <div class="stat-c"><div class="stat-v" id="statPlayers">—</div><div class="stat-l">Jami o'yinchilar</div></div>
+          <div class="stat-c"><div class="stat-v" id="statActive">—</div><div class="stat-l">Faol (24soat)</div></div>
+          <div class="stat-c"><div class="stat-v" id="statNews">—</div><div class="stat-l">Yangiliklar</div></div>
+          <div class="stat-c"><div class="stat-v" id="statTasks">—</div><div class="stat-l">Admin topshiriqlar</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">🏆 Top 5 o'yinchi</div>
+          <div id="top5List"><div style="color:var(--muted);font-size:13px">Yuklanmoqda...</div></div>
+        </div>
+        <button class="btn btn-primary" onclick="loadDashboard()">🔄 Yangilash</button>
+      </div>
+
+      <!-- PLAYERS -->
+      <div class="page-section" id="pg-players">
+        <div class="sec-title">👥 O'yinchilar ro'yxati</div>
+        <div class="card" style="margin-bottom:10px">
+          <div style="display:flex;gap:10px;align-items:center">
+            <input id="playerSearch" placeholder="Player ID yoki liga bo'yicha qidiring..." style="flex:1" oninput="filterPlayers()">
+            <button class="btn btn-primary btn-sm" onclick="loadPlayers()">🔄 Yangilash</button>
+          </div>
+        </div>
+        <div class="card" style="padding:0">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Player ID</th><th>Balans</th><th>Liga</th><th>Oxirgi faollik</th><th>Amal</th></tr></thead>
+              <tbody id="playersTbody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Yuklanmoqda...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="playersCount" style="font-size:11px;color:var(--muted);margin-top:8px"></div>
+      </div>
+
+      <!-- COINS -->
+      <div class="page-section" id="pg-coins">
+        <div class="sec-title">🪙 Foydalanuvchiga Coin berish</div>
+        <div class="card">
+          <div class="card-title">Coin yuborish</div>
+          <div class="form-row">
+            <div><label>Player UID (Firebase UID)</label><input id="coinUid" placeholder="Firebase user UID..."></div>
+            <div><label>Coin miqdori</label><input type="number" id="coinAmount" placeholder="Masalan: 10000" min="1"></div>
+          </div>
+          <div class="form-row-1"><label>Izoh (foydalanuvchi ko'radi)</label><input id="coinNote" placeholder="Admin sovg'asi! Rahmat 🎁"></div>
+          <button class="btn btn-primary" onclick="sendCoins()">🪙 Coin yuborish</button>
+          <div id="coinStatus" style="margin-top:10px;font-size:12px;color:var(--muted)"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Yuborilgan bonuslar</div>
+          <div id="bonusList"><div style="color:var(--muted);font-size:13px">Yuklanmoqda...</div></div>
+          <button class="btn btn-sm" style="background:var(--card2);border:1px solid var(--border);color:var(--muted);margin-top:10px" onclick="loadBonuses()">🔄 Yangilash</button>
+        </div>
+      </div>
+
+      <!-- NEWS -->
+      <div class="page-section" id="pg-news">
+        <div class="sec-title">📢 Yangiliklar yuborish</div>
+        <div class="card">
+          <div class="card-title">Yangi e'lon qo'shish</div>
+          <div class="form-row">
+            <div><label>Sarlavha</label><input id="newTitle" placeholder="Yangilik sarlavhasi..."></div>
+            <div><label>Emoji (ixtiyoriy)</label><input id="newIcon" placeholder="📢" value="📢" style="font-size:18px"></div>
+          </div>
+          <div class="form-row-1"><label>Xabar matni</label><textarea id="newMsg" placeholder="Barcha foydalanuvchilarga yuboriladigan xabar..."></textarea></div>
+          <button class="btn btn-primary" onclick="sendNews()">📢 Yuborish</button>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Barcha yangiliklar</div>
+          <div id="newsList"><div style="color:var(--muted);font-size:13px">Yuklanmoqda...</div></div>
+        </div>
+      </div>
+
+      <!-- TASKS -->
+      <div class="page-section" id="pg-tasks">
+        <div class="sec-title">🎯 Admin Topshiriqlar</div>
+        <div class="card">
+          <div class="card-title">Yangi topshiriq qo'shish</div>
+          <div class="form-row">
+            <div><label>Topshiriq nomi</label><input id="taskName" placeholder="Masalan: Telegram kanalga qo'shiling"></div>
+            <div><label>Emoji</label><input id="taskIcon" placeholder="📌" value="📌" style="font-size:18px"></div>
+          </div>
+          <div class="form-row">
+            <div><label>Mukofot (OZS)</label><input type="number" id="taskReward" placeholder="5000" min="1"></div>
+            <div><label>Tugma matni</label><input id="taskAction" placeholder="Qo'shilish" value="Bajarish"></div>
+          </div>
+          <div class="form-row-1" style="display:flex;align-items:center;gap:10px;">
+            <input type="checkbox" id="taskGroq" checked style="width:auto">
+            <label for="taskGroq" style="display:inline;font-size:13px;color:var(--text)">🤖 Groq AI tekshiruvi kerak</label>
+          </div>
+          <button class="btn btn-primary" onclick="addTask()">🎯 Topshiriq qo'shish</button>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Barcha topshiriqlar</div>
+          <div id="tasksList"><div style="color:var(--muted);font-size:13px">Yuklanmoqda...</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast-box" id="toast"></div>
+
 <script>
-const NEWS_KEY='ozs_admin_news';
-const TASK_GLOBAL='ozs_admin_tasks_global';
-const TASK_DIRECT='ozs_admin_tasks_by_player';
-const TASK_LEGACY='ozs_admin_tasks';
-const REGISTRY='ozs_players_registry';
-const GROQ_STORE='ozs_admin_groq_key';
-const GROQ_URL='https://api.groq.com/openai/v1/chat/completions';
-const MODEL='llama-3.3-70b-versatile';
+// Firebase config
+const FB_CONFIG={
+  apiKey:"AIzaSyDP2ZrLsb1SmPmi9V9PD_KbELL55oOXpwg",
+  authDomain:"ozs-coin.firebaseapp.com",
+  projectId:"ozs-coin",
+  storageBucket:"ozs-coin.firebasestorage.app",
+  messagingSenderId:"305519182400",
+  appId:"1:305519182400:web:3ecf2aa17a7ad9bf2395a5"
+};
+firebase.initializeApp(FB_CONFIG);
+const auth=firebase.auth();
+const db=firebase.firestore();
 
-function read(k,f){try{const x=localStorage.getItem(k);return x?JSON.parse(x):f;}catch(e){return f;}}
-function write(k,v){localStorage.setItem(k,JSON.stringify(v));}
-function setSt(t){document.getElementById('st').textContent=t;}
-function persistAdminGroqKey(){
-  const v=document.getElementById('adminGroqKey').value.trim();
-  if(v.length>8){localStorage.setItem(GROQ_STORE,v);setSt('Admin Groq kalit saqlandi');}
+let adminUser=null;
+let allPlayers=[];
+let toastTimer=null;
+
+function toast(msg,color='var(--text)'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.color=color;t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
 }
-function groqKey(){return(document.getElementById('adminGroqKey').value.trim()||localStorage.getItem(GROQ_STORE)||'').trim();}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmt(n){n=Math.floor(n||0);if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toString();}
+function timeAgo(ts){
+  if(!ts)return'—';
+  const s=Math.floor((Date.now()-ts)/1000);
+  if(s<60)return'hozirgina';
+  if(s<3600)return Math.floor(s/60)+'d oldin';
+  if(s<86400)return Math.floor(s/3600)+'s oldin';
+  return Math.floor(s/86400)+'k oldin';
+}
 
-function ensureLegacyTasks(){let g=read(TASK_GLOBAL,null);if(Array.isArray(g))return g;const o=read(TASK_LEGACY,[]);if(o.length){write(TASK_GLOBAL,o);return o;}return[];}
-
-window.addEventListener('DOMContentLoaded',()=>{
-  const k=localStorage.getItem(GROQ_STORE);
-  if(k)document.getElementById('adminGroqKey').value=k;
-  renderLists();
-  renderRegistry();
-});
-
-function formatTs(ts){const ms=Date.now()-ts,s=Math.floor(ms/1000);if(s<60)return'Shunchaki hozir';if(s<3600)return Math.floor(s/60)+' daqiqa oldin';if(s<86400)return Math.floor(s/3600)+' soat oldin';return Math.floor(s/86400)+' kun oldin';}
-
-async function runAdminGroq(){
-  document.getElementById('adminGroqOut').textContent='So‘rov yuborilmoqda...';
-  const key=groqKey();
-  const prompt=(document.getElementById('adminGroqPrompt').value||'').trim();
-  if(!key)return void(document.getElementById('adminGroqOut').textContent='Avval Groq kalit kiriting.');
-  if(!prompt)return void(document.getElementById('adminGroqOut').textContent='Prompt yozing.');
+// ---- AUTH ----
+async function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  const err=document.getElementById('loginErr');
+  err.style.display='none';
+  if(!email||!pass){err.textContent='Email va parolni kiriting';err.style.display='block';return;}
   try{
-    const r=await fetch(GROQ_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:MODEL,messages:[{role:'system',content:'Administrator yordamchisi — qisqa, aniq Uzbek/Russian javob beradi.'},{role:'user',content:prompt}],temperature:.35,max_tokens:900})});
-    const j=await r.json();if(!r.ok)throw new Error(JSON.stringify(j));
-    document.getElementById('adminGroqOut').textContent=j.choices[0].message.content||'(bo‘sh)';
+    const cred=await auth.signInWithEmailAndPassword(email,pass);
+    adminUser=cred.user;
+    onLoggedIn();
   }catch(e){
-    document.getElementById('adminGroqOut').textContent='Xato — CORS yoki kalit. Brauzerdan Groq API ba‘zan bloklanadi; kichik server/proxy zarur.';
+    err.textContent='Xato: '+(e.code==='auth/wrong-password'?'Noto\'g\'ri parol':e.code==='auth/user-not-found'?'Foydalanuvchi topilmadi':e.message);
+    err.style.display='block';
   }
 }
-
-function renderRegistry(){
-  const list=document.getElementById('registryList');
-  list.innerHTML='';
-  const reg=Array.isArray(read(REGISTRY,[]))?read(REGISTRY,[]):[];
-  reg.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
-  if(!reg.length){list.innerHTML='<li style="opacity:.6;border:none;padding:12px;text-align:center">Hali qurilmadan o‘yin o‘yinilmagan (local).</li>';return;}
-  reg.slice(0,60).forEach(p=>{
-    const li=document.createElement('li');li.className='reg';
-    const wrap=document.createElement('div');wrap.innerHTML='<strong>'+escapeHtml(p.playerId||'')+'</strong><div class="muted">Balans: '+(fmtN(p.balance))+' • Liga idx: '+String(p.leagueIdx??'?')+'</div>';
-    const b=document.createElement('button');b.type='button';b.className='alt';b.textContent='ID';b.onclick=()=>injectId(p.playerId);
-    li.appendChild(wrap);li.appendChild(b);
-    list.appendChild(li);
-  });
+async function doLogout(){
+  await auth.signOut();
+  adminUser=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
 }
-function fmtN(n){n=Math.floor(Number(n)||0);if(n>=1e6)return(n/1e6).toFixed(2)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return String(n);}
-function injectId(pid){document.getElementById('taskTargetIds').value=pid;(document.querySelector('input[name=taskTarget][value=ids]')).checked=true;setSt('ID yozildi')}
-function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function onLoggedIn(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('adminEmail').textContent=adminUser.email;
+  loadDashboard();loadNews();loadTasks();loadBonuses();loadPlayers();
+}
+document.getElementById('loginEmail').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginPass').focus();});
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+auth.onAuthStateChanged(u=>{if(u&&u.email){adminUser=u;onLoggedIn();}});
 
-function addNews(){
-  const title=document.getElementById('newsTitle').value.trim();
-  const msg=document.getElementById('newsMsg').value.trim();
-  if(!title||!msg)return setSt('Sarlavha va matn');
-  const n={id:'news_'+Date.now(),title,msg,icon:(document.getElementById('newsIcon').value||'📰').trim(),ts:Date.now()};
-  const arr=[n].concat(read(NEWS_KEY,[]));
-  write(NEWS_KEY,arr);
-  document.getElementById('newsTitle').value='';document.getElementById('newsMsg').value='';
-  setSt('Yangilik yuborildi');
-  renderLists();
+// ---- NAVIGATION ----
+function goPage(name){
+  document.querySelectorAll('.page-section').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pg=document.getElementById('pg-'+name);if(pg)pg.classList.add('active');
+  const ni=document.querySelector('[data-page="'+name+'"]');if(ni)ni.classList.add('active');
 }
 
-function renderLists(){
-  const news=read(NEWS_KEY,[]);
-  const na=document.getElementById('newsListAdmin');
-  na.innerHTML='';
-  news.forEach(n=>{
-    const nid=n.id||'';
-    const li=document.createElement('li');li.style.cssText='display:flex;justify-content:space-between;gap:8px;margin:8px 0;font-size:12px';
-    const ts=typeof n.ts==='number'?n.ts:Date.now();
-    li.innerHTML='<span>'+(n.icon||'📰')+' <strong>'+escapeHtml(n.title)+'</strong> — '+formatTs(ts)+'</span>';
-    const b=document.createElement('button');b.type='button';b.className='alt';b.textContent='O‘chirish';b.onclick=()=>{write(NEWS_KEY,read(NEWS_KEY,[]).filter(x=>(x.id||'')!==nid));renderLists();};
-    li.appendChild(b);na.appendChild(li);
-  });
-
-  const g=ensureLegacyTasks();
-  const d=read(TASK_DIRECT,{});
-  document.getElementById('taskOverview').innerHTML='';
-  const hdr=document.createElement('div');hdr.className='muted';hdr.textContent='Global: '+g.length+' ta • ID lar: '+Object.keys(d).length;
-  document.getElementById('taskOverview').appendChild(hdr);
-}
-
-function clearNews(){write(NEWS_KEY,[]);setSt('Tozalandi');renderLists();}
-function clearAllTasks(){write(TASK_GLOBAL,[]);write(TASK_DIRECT,{});try{localStorage.removeItem(TASK_LEGACY);}catch(e){};setSt('Topshiqlar tozalandi');renderLists();}
-
-function addTaskTargeted(){
-  const name=document.getElementById('taskName').value.trim();
-  const reward=Math.max(0,Number(document.getElementById('taskReward').value||0));
-  if(!name||reward<1)return void setSt('Nom va mukofot');
-  let id=document.getElementById('taskId').value.trim()||('ad_'+Date.now());
-  const groq=document.getElementById('taskNoGroq').checked?false:true;
-  const payload={id,icon:(document.getElementById('taskIcon').value||'🆕').trim(),name,reward,action:document.getElementById('taskAction').value||'Bajarish',groqVerify:groq,ts:Date.now()};
-  const mode=document.querySelector('input[name=taskTarget]:checked').value;
-
-  const g=[].concat(read(TASK_GLOBAL,[]));
-  const d=Object.assign({},read(TASK_DIRECT,{}));
-
-  if(mode==='all'){
-    g.unshift(payload);
-    write(TASK_GLOBAL,g);
-  }else{
-    const ids=(document.getElementById('taskTargetIds').value||'').split(/[,，\s]+/).map(x=>x.trim()).filter(Boolean);
-    if(!ids.length)return void setSt('ID kiriting');
-    ids.forEach(pid=>{
-      const t={...payload,id:id+'_'+String(pid).replace(/[^a-zA-Z0-9]/g,''),ts:Date.now()};
-      if(!d[pid])d[pid]=[];
-      d[pid]=[t].concat(d[pid]);
+// ---- DASHBOARD ----
+async function loadDashboard(){
+  try{
+    const snap=await db.collection('leaderboard').orderBy('balance','desc').limit(100).get();
+    const players=snap.docs.map(d=>({uid:d.id,...d.data()}));
+    document.getElementById('statPlayers').textContent=players.length;
+    const now=Date.now();
+    const active=players.filter(p=>p.updatedAt&&(now-p.updatedAt)<86400000).length;
+    document.getElementById('statActive').textContent=active;
+    // Top 5
+    const top5=document.getElementById('top5List');
+    top5.innerHTML='';
+    players.slice(0,5).forEach((p,i)=>{
+      const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+      const d=document.createElement('div');
+      d.style.cssText='display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)';
+      d.innerHTML='<span style="font-size:18px;width:28px">'+medals[i]+'</span>'
+        +'<span style="flex:1;font-size:12px">'+esc((p.playerId||'?').slice(0,20))+'</span>'
+        +'<span style="color:var(--gold);font-size:12px;font-weight:700">🪙 '+fmt(p.balance)+'</span>'
+        +'<span style="font-size:11px;margin-left:8px">'+(p.leagueIcon||'🥉')+'</span>';
+      top5.appendChild(d);
     });
-    write(TASK_DIRECT,d);
-  }
-  ensureLegacyTasks();
-  setSt(mode==='all'?'Barchaga joylandi':'ID larga jo‘natildi');
-  document.getElementById('taskName').value='';
-  renderLists();renderRegistry();
+    // News & tasks count
+    const [nd,td]=await Promise.all([
+      db.collection('admin_data').doc('news').get(),
+      db.collection('admin_data').doc('tasks').get()
+    ]);
+    document.getElementById('statNews').textContent=(nd.exists&&Array.isArray(nd.data().items))?nd.data().items.length:0;
+    document.getElementById('statTasks').textContent=(td.exists&&Array.isArray(td.data().items))?td.data().items.length:0;
+  }catch(e){toast('Dashboard xato: '+e.message,'var(--red)');}
 }
 
-function exportAll(){
-  const blob=new Blob([JSON.stringify({
-    news:read(NEWS_KEY,[]),
-    tasks_global:read(TASK_GLOBAL,[]),
-    tasks_by_player:read(TASK_DIRECT,{}),
-  },null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);a.download='ozs-admin-bundle.json';a.click();URL.revokeObjectURL(a.href);setSt('Eksport');
+// ---- PLAYERS ----
+async function loadPlayers(){
+  const tbody=document.getElementById('playersTbody');
+  tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Yuklanmoqda...</td></tr>';
+  try{
+    const snap=await db.collection('leaderboard').orderBy('balance','desc').limit(200).get();
+    allPlayers=snap.docs.map((d,i)=>({uid:d.id,rank:i+1,...d.data()}));
+    document.getElementById('playersCount').textContent='Jami: '+allPlayers.length+" o'yinchi";
+    renderPlayers(allPlayers);
+  }catch(e){
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--red);padding:20px">Xato: '+esc(e.message)+'</td></tr>';
+  }
 }
-function importAll(){
-  const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=()=>{
-    const f=i.files&&i.files[0];if(!f)return;
-    f.text().then(txt=>{
-      const p=JSON.parse(txt);
-      if(Array.isArray(p.news))write(NEWS_KEY,p.news);
-      if(Array.isArray(p.tasks_global))write(TASK_GLOBAL,p.tasks_global);
-      if(typeof p.tasks_by_player==='object')write(TASK_DIRECT,p.tasks_by_player);
-      renderLists();setSt('Import OK');
-    }).catch(()=>setSt('Xato'));
-  };i.click();
+function filterPlayers(){
+  const q=document.getElementById('playerSearch').value.toLowerCase();
+  const filtered=q?allPlayers.filter(p=>(p.playerId||'').toLowerCase().includes(q)||(p.leagueName||'').toLowerCase().includes(q)):allPlayers;
+  renderPlayers(filtered);
+}
+function renderPlayers(players){
+  const tbody=document.getElementById('playersTbody');
+  if(!players.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Topilmadi</td></tr>';return;}
+  tbody.innerHTML=players.map((p,i)=>`
+    <tr>
+      <td style="color:var(--muted)">${p.rank||i+1}</td>
+      <td style="font-family:monospace;font-size:11px">${esc((p.playerId||'?').slice(0,24))}</td>
+      <td style="color:var(--gold);font-weight:700">🪙 ${fmt(p.balance)}</td>
+      <td>${esc(p.leagueIcon||'🥉')} ${esc(p.leagueName||'?')}</td>
+      <td style="color:var(--muted);font-size:11px">${timeAgo(p.updatedAt)}</td>
+      <td><button class="btn btn-sm btn-primary" onclick="fillCoinUid('${esc(p.uid)}')">🪙 Coin</button></td>
+    </tr>`).join('');
+}
+function fillCoinUid(uid){
+  document.getElementById('coinUid').value=uid;
+  goPage('coins');
+  toast('UID to\'ldirildi ✅');
+}
+
+// ---- COINS ----
+async function sendCoins(){
+  const uid=document.getElementById('coinUid').value.trim();
+  const amount=parseInt(document.getElementById('coinAmount').value)||0;
+  const note=document.getElementById('coinNote').value.trim()||'Admin sovg\'asi! 🎁';
+  const status=document.getElementById('coinStatus');
+  if(!uid||uid.length<10){toast('Player UID kiriting','var(--red)');return;}
+  if(amount<=0){toast('Coin miqdorini kiriting','var(--red)');return;}
+  status.textContent='Yuborilmoqda...';status.style.color='var(--muted)';
+  try{
+    const bonusRef=db.collection('admin_data').doc('bonuses');
+    const ts=Date.now();
+    await bonusRef.set({[uid]:{coins:amount,note,ts,applied:false,adminEmail:adminUser.email}},{merge:true});
+    status.textContent='✅ Yuborildi! Foydalanuvchi keyingi kirishda oladi.';
+    status.style.color='var(--green)';
+    document.getElementById('coinUid').value='';
+    document.getElementById('coinAmount').value='';
+    document.getElementById('coinNote').value='';
+    toast('🪙 '+fmt(amount)+' OZS yuborildi!','var(--green)');
+    loadBonuses();
+  }catch(e){
+    status.textContent='Xato: '+e.message;status.style.color='var(--red)';
+    toast('Xato: '+e.message,'var(--red)');
+  }
+}
+async function loadBonuses(){
+  const list=document.getElementById('bonusList');
+  try{
+    const doc=await db.collection('admin_data').doc('bonuses').get();
+    if(!doc.exists){list.innerHTML='<div style="color:var(--muted);font-size:12px">Hali bonus yo\'q</div>';return;}
+    const data=doc.data();
+    const entries=Object.entries(data);
+    if(!entries.length){list.innerHTML='<div style="color:var(--muted);font-size:12px">Hali bonus yo\'q</div>';return;}
+    list.innerHTML=entries.sort((a,b)=>(b[1].ts||0)-(a[1].ts||0)).slice(0,20).map(([uid,b])=>
+      '<div style="display:flex;align-items:center;gap:10px;background:var(--card2);border-radius:9px;padding:9px 12px;margin-bottom:7px">'
+        +'<div style="flex:1"><div style="font-size:11px;font-family:monospace;color:var(--muted)">'+esc(uid.slice(0,20))+'...</div>'
+        +'<div style="font-size:12px;margin-top:2px">'+esc(b.note||'')+'</div></div>'
+        +'<div style="text-align:right"><div style="color:var(--gold);font-weight:700;font-size:13px">+'+fmt(b.coins)+'</div>'
+        +'<div style="font-size:10px;color:'+(b.applied?'var(--green)':'var(--muted)')+'">'+( b.applied?'✅ Olindi':'⏳ Kutilmoqda')+'</div></div>'
+        +'<button class="btn btn-sm btn-danger" onclick="deleteBonus(\''+esc(uid)+'\')">🗑</button>'
+      +'</div>').join('');
+  }catch(e){list.innerHTML='<div style="color:var(--red);font-size:12px">Xato: '+esc(e.message)+'</div>';}
+}
+async function deleteBonus(uid){
+  if(!confirm("Bu bonusni o'chirish uchun tasdiqlang"))return;
+  try{
+    await db.collection('admin_data').doc('bonuses').update({[uid]:firebase.firestore.FieldValue.delete()});
+    toast("O'chirildi",'var(--green)');loadBonuses();
+  }catch(e){toast('Xato: '+e.message,'var(--red)');}
+}
+
+// ---- NEWS ----
+async function sendNews(){
+  const title=document.getElementById('newTitle').value.trim();
+  const icon=document.getElementById('newIcon').value.trim()||'📢';
+  const msg=document.getElementById('newMsg').value.trim();
+  if(!title||!msg){toast('Sarlavha va xabar kiriting','var(--red)');return;}
+  const ts=Date.now();
+  const item={id:'news_'+ts,icon,title,msg,ts,by:adminUser.email};
+  try{
+    const ref=db.collection('admin_data').doc('news');
+    const doc=await ref.get();
+    const items=doc.exists&&Array.isArray(doc.data().items)?doc.data().items:[];
+    items.unshift(item);
+    if(items.length>50)items.splice(50);
+    await ref.set({items});
+    document.getElementById('newTitle').value='';
+    document.getElementById('newMsg').value='';
+    document.getElementById('newIcon').value='📢';
+    toast('📢 Yangilik yuborildi!','var(--green)');
+    loadNews();
+    document.getElementById('statNews').textContent=items.length;
+  }catch(e){toast('Xato: '+e.message,'var(--red)');}
+}
+async function loadNews(){
+  const list=document.getElementById('newsList');
+  try{
+    const doc=await db.collection('admin_data').doc('news').get();
+    if(!doc.exists||!doc.data().items||!doc.data().items.length){
+      list.innerHTML='<div style="color:var(--muted);font-size:12px">Hali yangilik yo\'q</div>';return;
+    }
+    const items=doc.data().items;
+    list.innerHTML=items.map(n=>
+      '<div class="news-item"><div class="news-body">'
+        +'<div class="news-title">'+esc(n.icon)+' '+esc(n.title)+'</div>'
+        +'<div class="news-msg">'+esc(n.msg)+'</div>'
+        +'<div style="font-size:10px;color:var(--muted);margin-top:4px">'+timeAgo(n.ts)+'</div>'
+      +'</div>'
+      +'<button class="btn btn-sm btn-danger" onclick="deleteNews(\''+esc(n.id)+'\')">🗑</button>'
+      +'</div>').join('');
+  }catch(e){list.innerHTML='<div style="color:var(--red);font-size:12px">Xato: '+esc(e.message)+'</div>';}
+}
+async function deleteNews(id){
+  if(!confirm("Bu yangilikni o'chirish uchun tasdiqlang"))return;
+  try{
+    const ref=db.collection('admin_data').doc('news');
+    const doc=await ref.get();
+    if(!doc.exists)return;
+    const items=(doc.data().items||[]).filter(n=>n.id!==id);
+    await ref.set({items});
+    toast("O'chirildi",'var(--green)');loadNews();
+    document.getElementById('statNews').textContent=items.length;
+  }catch(e){toast('Xato: '+e.message,'var(--red)');}
+}
+
+// ---- TASKS ----
+async function addTask(){
+  const name=document.getElementById('taskName').value.trim();
+  const icon=document.getElementById('taskIcon').value.trim()||'📌';
+  const reward=parseInt(document.getElementById('taskReward').value)||0;
+  const action=document.getElementById('taskAction').value.trim()||'Bajarish';
+  const groqVerify=document.getElementById('taskGroq').checked;
+  if(!name||reward<=0){toast('Topshiriq nomi va mukofotni kiriting','var(--red)');return;}
+  const ts=Date.now();
+  const item={id:'adg_'+ts,icon,name,reward,action,groqVerify,by:adminUser.email,ts};
+  try{
+    const ref=db.collection('admin_data').doc('tasks');
+    const doc=await ref.get();
+    const items=doc.exists&&Array.isArray(doc.data().items)?doc.data().items:[];
+    items.push(item);
+    await ref.set({items});
+    document.getElementById('taskName').value='';
+    document.getElementById('taskReward').value='';
+    document.getElementById('taskAction').value='Bajarish';
+    toast('✅ Topshiriq qo\'shildi!','var(--green)');
+    loadTasks();
+    document.getElementById('statTasks').textContent=items.length;
+  }catch(e){toast('Xato: '+e.message,'var(--red)');}
+}
+async function loadTasks(){
+  const list=document.getElementById('tasksList');
+  try{
+    const doc=await db.collection('admin_data').doc('tasks').get();
+    if(!doc.exists||!doc.data().items||!doc.data().items.length){
+      list.innerHTML='<div style="color:var(--muted);font-size:12px">Hali topshiriq yo\'q</div>';return;
+    }
+    const items=doc.data().items;
+    list.innerHTML=items.map(t=>
+      '<div class="task-item">'
+        +'<div style="font-size:20px;margin-right:4px">'+esc(t.icon)+'</div>'
+        +'<div class="task-info"><div class="task-name">'+esc(t.name)+'</div>'
+        +'<div class="task-meta">🪙 +'+fmt(t.reward)+' OZS · '+esc(t.action)+(t.groqVerify?' · 🤖':'')+'</div></div>'
+        +'<button class="btn btn-sm btn-danger" onclick="deleteTask(\''+esc(t.id)+'\')">🗑</button>'
+      +'</div>').join('');
+  }catch(e){list.innerHTML='<div style="color:var(--red);font-size:12px">Xato: '+esc(e.message)+'</div>';}
+}
+async function deleteTask(id){
+  if(!confirm("Bu topshiriqni o'chirish uchun tasdiqlang"))return;
+  try{
+    const ref=db.collection('admin_data').doc('tasks');
+    const doc=await ref.get();
+    if(!doc.exists)return;
+    const items=(doc.data().items||[]).filter(t=>t.id!==id);
+    await ref.set({items});
+    toast("O'chirildi",'var(--green)');loadTasks();
+    document.getElementById('statTasks').textContent=items.length;
+  }catch(e){toast('Xato: '+e.message,'var(--red)');}
 }
 </script>
 </body>
 </html>
-
